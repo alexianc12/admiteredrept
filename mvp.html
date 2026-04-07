@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admitere Drept</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { academia: { navy: '#1A2238', gold: '#C19A6B', goldL: '#FBF5E9' } },
+                    fontFamily: { sans: ['Plus Jakarta Sans'], serif: ['Playfair Display'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .opt-card, .btn-primary, .subject-card { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .active-scale:active { transform: scale(0.98); }
+
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-content > div { overflow: hidden; }
+        .accordion-open { grid-template-rows: 1fr; }
+
+        .arrow-rotate { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .rotated { transform: rotate(180deg); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #C19A6B; border-radius: 10px; }
+        
+        @keyframes fadeInUpStagger {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-item { animation: fadeInUpStagger 0.3s forwards cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; }
+    </style>
+</head>
+<body class="bg-slate-50 text-academia-navy min-h-screen">
+
+    <nav class="fixed top-0 w-full z-50 px-6 py-4 bg-white/95 backdrop-blur-md border-b border-slate-200 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-4 group">
+            <div id="btn-back" class="text-academia-gold font-black text-2xl cursor-pointer hover:-translate-x-1 transition-transform hidden active-scale" onclick="goBack()">&#8592;</div>
+            <span class="font-extrabold text-xl tracking-tighter uppercase font-sans cursor-pointer active-scale" onclick="navigateTo('scr-lobby')">
+                ADMITERE<span class="text-academia-gold">DREPT</span>
+            </span>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-8 px-4 flex justify-center">
+        <div class="w-full max-w-5xl">
+
+            <div id="scr-error" class="hidden text-center py-20 bg-white border border-rose-200 rounded-3xl shadow-lg max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold text-rose-600 mb-2">Conexiune Blocată</h2>
+                <p id="error-details" class="text-slate-600 font-medium px-8 mb-6"></p>
+            </div>
+
+            <div id="scr-lobby" class="hidden max-w-3xl mx-auto mt-6">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl md:text-5xl font-serif mb-4 text-academia-navy">Selectează Materia</h1>
+                    <p class="text-slate-500 font-medium">Alege disciplina pentru a configura sesiunea.</p>
+                </div>
+                <div id="subject-list" class="grid gap-4"></div>
+            </div>
+
+            <div id="scr-filter" class="hidden max-w-3xl mx-auto mt-6">
+                <div class="bg-white border border-slate-200 rounded-[32px] shadow-xl p-8">
+                    <h2 id="filter-title" class="text-3xl font-serif font-bold text-center mb-8"></h2>
+                    <button onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-4 bg-academia-navy text-academia-gold rounded-xl font-bold text-lg hover:shadow-lg transition-all active-scale">
+                        Mod Exclusiv (Toate Grilele, Random)
+                    </button>
+                    <div class="flex items-center gap-4 mb-6">
+                        <hr class="flex-1 border-slate-200">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">SAU ALEGE LECȚIILE</span>
+                        <hr class="flex-1 border-slate-200">
+                    </div>
+                    <div id="filter-list" class="space-y-4 mb-8 max-h-[45vh] overflow-y-auto pr-2 custom-scroll"></div>
+                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-4 bg-academia-gold text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all active-scale">
+                        Începe Selecția &#8594;
+                    </button>
+                </div>
+            </div>
+
+            <div id="scr-quiz" class="hidden mt-2">
+                <div class="bg-white border border-slate-200 rounded-[32px] shadow-2xl p-6 md:p-10">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                        <span id="q-meta" class="text-xs font-black uppercase tracking-[0.1em] text-academia-gold"></span>
+                        <span class="text-sm font-bold text-slate-300"></span>
+                    </div>
+                    <div class="mb-6"><div id="q-text" class="leading-relaxed"></div></div>
+                    <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                    <div class="mt-8 flex flex-col items-center">
+                        <div id="q-sursa" class="text-xs font-semibold tracking-wide text-slate-400 mb-2 hidden"></div>
+                        <button id="btn-action" disabled class="w-full max-w-md py-4 bg-academia-navy text-academia-gold rounded-xl font-bold text-lg hover:shadow-lg disabled:opacity-20 transition-all active-scale">
+                            Trimite Răspunsul
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbybB7Loqhsu2RCI4clEmvpY7IVscyV_Kdr1TRzbNioSbhy3lGmcXDIRD9dWW8kHv0ei/exec";
+        let db = {};
+        let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentSubject: null };
+
+        function navigateTo(screenId, push = true) {
+            ['scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('animate__fadeIn');
+            });
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden');
+            target.classList.add('animate__fadeIn');
+            document.getElementById('btn-back').classList.toggle('hidden', screenId === 'scr-lobby' || screenId === 'scr-error');
+            if (push && window.location.protocol !== 'file:') {
+                history.pushState({ screen: screenId }, "", `#${screenId.split('-')[1]}`);
+            }
+        }
+
+        window.addEventListener('popstate', (e) => { if (e.state) navigateTo(e.state.screen, false); });
+        function goBack() { if (window.location.protocol !== 'file:' && history.state?.screen !== 'scr-lobby') history.back(); else navigateTo('scr-lobby', false); }
+        function toggleAccordion(capId) {
+            const wrap = document.getElementById(capId + '_wrap');
+            const arrow = document.getElementById(capId + '_arrow');
+            wrap.classList.toggle('accordion-open');
+            arrow?.classList.toggle('rotated');
+        }
+
+        async function init() {
+            try {
+                const cached = localStorage.getItem('grile_db');
+                if (cached) processData(JSON.parse(cached));
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                localStorage.setItem('grile_db', JSON.stringify(data));
+                processData(data);
+            } catch (e) { if (!Object.keys(db).length) navigateTo('scr-error', false); }
+        }
+
+        function processData(data) {
+            db = data.reduce((acc, item) => {
+                let m = item.materie;
+                if (!m || m.toLowerCase().trim() === 'altele') return acc;
+                if (m.toLowerCase().includes('gândire') || m.toLowerCase().includes('gandire')) m = 'Logică';
+                if (!acc[m]) acc[m] = [];
+                acc[m].push(item);
+                return acc;
+            }, {});
+            renderLobby();
+        }
+
+        function renderLobby() {
+            const list = document.getElementById('subject-list');
+            list.innerHTML = ""; 
+            Object.keys(db).forEach((m, i) => {
+                const btn = document.createElement('div');
+                btn.style.animationDelay = `${i * 0.04}s`;
+                btn.className = "stagger-item flex justify-between items-center p-6 bg-white border-2 border-slate-100 rounded-2xl cursor-pointer hover:border-academia-gold hover:shadow-md transition-all group active-scale";
+                btn.onclick = () => openFilter(m);
+                btn.innerHTML = `<div class="font-extrabold text-xl">${m}</div><span class="text-academia-gold font-black text-2xl group-hover:translate-x-2 transition-transform">&#8594;</span>`;
+                list.appendChild(btn);
+            });
+            navigateTo('scr-lobby', false);
+        }
+
+        function openFilter(m) {
+            state.currentSubject = m;
+            navigateTo('scr-filter');
+            document.getElementById('filter-title').innerText = m;
+            const chapters = {};
+            db[m].forEach(q => {
+                const c = q.capitol?.trim() || "General";
+                const sc = q.subcapitol?.trim() || "General";
+                if (!chapters[c]) chapters[c] = new Set();
+                if (sc !== "General") chapters[c].add(sc);
+            });
+            const cont = document.getElementById('filter-list');
+            cont.innerHTML = "";
+            Object.entries(chapters).forEach(([cap, subcaps], i) => {
+                const capId = 'cap_' + cap.replace(/[\s\W]+/g, '');
+                let html = `<div class="stagger-item bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" style="animation-delay: ${i * 0.03}s">`;
+                if (m === 'Limba română') {
+                    html += `
+                        <div class="flex items-center p-4 cursor-pointer select-none active:bg-slate-100 transition-colors" onclick="toggleAccordion('${capId}')">
+                            <input type="checkbox" class="cap-cb w-5 h-5 accent-academia-gold mr-4" value="${cap}" onchange="event.stopPropagation(); toggleSubcaps('${capId}', this.checked)">
+                            <span class="font-bold text-base md:text-lg text-academia-navy flex-1">${cap}</span>
+                            <span id="${capId}_arrow" class="arrow-rotate text-academia-gold font-bold text-xl px-2">&#9662;</span>
+                        </div>
+                        <div id="${capId}_wrap" class="accordion-content">
+                            <div class="pl-12 pr-4 pb-4 space-y-3 border-t border-slate-200 pt-4 bg-white">
+                                ${Array.from(subcaps).map(sub => `
+                                    <label class="flex items-center gap-3 text-slate-600 font-semibold cursor-pointer active:opacity-70 transition-opacity">
+                                        <input type="checkbox" class="sub-cb w-4 h-4 accent-academia-gold" value="${sub}"> <span class="leading-tight">${sub}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                } else {
+                    html += `<label class="flex items-center p-4 cursor-pointer select-none active:bg-slate-100 transition-colors">
+                                <input type="checkbox" class="cap-cb w-5 h-5 accent-academia-gold mr-4" value="${cap}"> 
+                                <span class="font-bold text-lg text-academia-navy">${cap}</span>
+                             </label>`;
+                }
+                html += `</div>`;
+                cont.innerHTML += html;
+            });
+        }
+
+        function toggleSubcaps(capId, isChecked) {
+            const container = document.getElementById(capId + '_wrap');
+            if(container) container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
+        }
+
+        function startFilteredQuiz(mode) {
+            const m = state.currentSubject;
+            let pool = db[m];
+            if (mode === 'SELECTED') {
+                const selCaps = Array.from(document.querySelectorAll('.cap-cb:checked')).map(cb => cb.value);
+                const selSubs = Array.from(document.querySelectorAll('.sub-cb:checked')).map(cb => cb.value);
+                pool = db[m].filter(q => selCaps.includes(q.capitol?.trim()) || selSubs.includes(q.subcapitol?.trim()));
+            }
+            if (!pool.length) {
+                const btn = document.getElementById('btn-start-sel');
+                btn.innerText = "Selectează cel puțin o opțiune!";
+                btn.classList.replace('bg-academia-gold', 'bg-rose-500');
+                setTimeout(() => { btn.innerText = "Începe Selecția \u2192"; btn.classList.replace('bg-rose-500', 'bg-academia-gold'); }, 2000);
+                return;
+            }
+            // RANDOMIZARE AUTOMATĂ
+            state.list = pool.sort(() => Math.random() - 0.5);
+            state.idx = 0;
+            navigateTo('scr-quiz');
+            renderQ();
+        }
+
+        function renderQ() {
+            state.step = 'select';
+            const q = state.list[state.idx];
+            const btn = document.getElementById('btn-action');
+            btn.disabled = true; btn.innerText = "Trimite Răspunsul"; btn.onclick = submitAnswer;
+            btn.className = "w-full max-w-md py-4 bg-academia-navy text-academia-gold rounded-xl font-bold text-lg hover:shadow-lg disabled:opacity-20 transition-all active-scale";
+            
+            document.getElementById('q-meta').innerText = `${q.capitol || ''} ${q.subcapitol ? '> ' + q.subcapitol : ''}`;
+            
+            let rawText = q.enunt;
+            let extractedID = q.id || q.id_grila || "";
+            const matchStart = rawText.match(/^\s*(\d+)[\.\-\)]\s+/);
+            if (matchStart) { extractedID = extractedID || matchStart[1]; rawText = rawText.replace(matchStart[0], ''); }
+            
+            if (state.currentSubject === "Logică") {
+                const matchMid = rawText.match(/\s+(\d{1,4})\.\s+/);
+                if (matchMid) {
+                    extractedID = extractedID || matchMid[1];
+                    const p = rawText.split(matchMid[0]);
+                    rawText = `<div class="text-lg md:text-xl text-slate-700 font-medium mb-3 pb-3 border-b border-slate-200 leading-snug animate__animated animate__fadeIn">${p[0].trim()}</div>
+                               <div class="font-bold text-lg md:text-xl text-academia-navy leading-snug animate__animated animate__fadeIn animate__delay-1s">${p[1].trim()}</div>`;
+                } else {
+                    rawText = `<div class="font-bold text-lg md:text-xl text-academia-navy leading-snug animate__animated animate__fadeIn">${rawText.trim()}</div>`;
+                }
+            } else {
+                if (state.currentSubject === "Limba română") {
+                    rawText = rawText.replace(/(cuvântul|termenul|adverbul|substantivul|verbul|adjectivul|pronumele|expresia|locuțiunea)\s+([a-zăâîșț-]+(?:\s+a\s+[a-zăâîșț-]+)?)(?=\s+(?:provine|este|poate|are|se|\()|:|,|\.|\s*$)/gi, '$1 „$2”');
+                    rawText = rawText.replace(/(Fie fraza:\s*)„?(.*?)”?\s*[,]?\s+(Felul|Sunt|numărul|pronumele|În ordinea|în ordinea)/gi, '$1„$2”. $3');
+                }
+                rawText = `<div class="font-bold text-lg md:text-xl text-academia-navy leading-snug animate__animated animate__fadeIn">${rawText}</div>`;
+            }
+            document.getElementById('q-text').innerHTML = rawText;
+            
+            const sursaEl = document.getElementById('q-sursa');
+            let sTxt = (extractedID || q.sursa) ? `Sursa: ${[extractedID, q.sursa].filter(Boolean).join(", ")}` : "";
+            sursaEl.innerText = sTxt; sursaEl.classList.toggle('hidden', !sTxt);
+            
+            const cont = document.getElementById('q-options');
+            cont.innerHTML = "";
+            ['var_a', 'var_b', 'var_c', 'var_d'].forEach((k, i) => {
+                if(!q[k]) return;
+                const letter = k.split('_')[1].toUpperCase();
+                const opt = document.createElement('div');
+                opt.style.animationDelay = `${i * 0.04}s`;
+                opt.className = "stagger-item opt-card p-3 md:p-4 bg-white border-2 border-slate-100 rounded-xl cursor-pointer text-sm md:text-base font-semibold flex gap-3 items-center active-scale";
+                opt.dataset.val = letter;
+                opt.innerHTML = `<span class="w-8 h-8 rounded-lg border-2 border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 flex-shrink-0 transition-colors">${letter}</span><span class="text-academia-navy leading-snug">${q[k]}</span>`;
+                opt.onclick = () => selectOpt(opt, letter);
+                cont.appendChild(opt);
+            });
+        }
+
+        function selectOpt(el, val) {
+            if (state.step === 'validate') return;
+            document.querySelectorAll('.opt-card').forEach(c => {
+                c.classList.remove('border-academia-gold', 'bg-academia-goldL');
+                c.classList.add('border-slate-100', 'bg-white');
+                c.querySelector('span').classList.replace('text-academia-gold', 'text-slate-400');
+                c.querySelector('span').classList.replace('border-academia-gold', 'border-slate-200');
+            });
+            el.classList.replace('border-slate-100', 'border-academia-gold');
+            el.classList.replace('bg-white', 'bg-academia-goldL');
+            el.querySelector('span').classList.replace('text-slate-400', 'text-academia-gold');
+            el.querySelector('span').classList.replace('border-slate-200', 'border-academia-gold');
+            state.selectedVal = val; state.selectedEl = el; document.getElementById('btn-action').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (state.step !== 'select') return;
+            const q = state.list[state.idx];
+            const cor = q.raspuns_corect.trim().toUpperCase();
+            const el = state.selectedEl;
+            const correctEl = document.querySelector(`.opt-card[data-val="${cor}"]`);
+            
+            document.querySelectorAll('.opt-card').forEach(c => c.classList.add('locked', 'opacity-40'));
+            [el, correctEl].forEach(c => c?.classList.remove('opacity-40'));
+            
+            if (state.selectedVal.toUpperCase() === cor) {
+                el.classList.add('bg-emerald-500', 'border-emerald-600', 'text-white', 'shadow-md');
+                el.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+            } else {
+                el.classList.add('bg-rose-500', 'border-rose-600', 'text-white', 'shake', 'shadow-md');
+                el.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                if (correctEl) {
+                    correctEl.classList.add('bg-emerald-500', 'border-emerald-600', 'text-white', 'shadow-md');
+                    correctEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                }
+            }
+            state.step = 'validate';
+            const btn = document.getElementById('btn-action');
+            btn.innerText = "Continuă \u2192"; btn.className = "w-full max-w-md py-4 bg-academia-gold text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all active-scale";
+            btn.onclick = () => { state.idx++; if (state.idx < state.list.length) renderQ(); else goBack(); };
+        }
+
+        init();
+    </script>
+</body>
+</html>
