@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -490,19 +491,32 @@
         navigateTo('scr-quiz'); renderQ();
     }
 
-    function renderQ() {
+
+function renderQ() {
         state.step = 'select';
         document.getElementById('auth-prompt').classList.add('hidden');
         const q = state.list[state.idx];
         
+        // --- 1. LOGICĂ BREADCRUMBS (MATERIE > CAPITOL > SUBCAPITOL) ---
         let breadcrumbs = q.computedMaterie || state.currentSubject || 'Mix Global';
-        if (q.capitol && q.capitol !== "General" && q.capitol !== "General - Mix") breadcrumbs += ` &rarr; ${q.capitol}`;
-        if (q.subcapitol && q.subcapitol !== "General") breadcrumbs += ` &rarr; ${q.subcapitol}`;
+        
+        const cap = q.capitol || "";
+        const subcap = q.subcapitol || "";
+        
+        if (cap && cap !== "General" && cap !== "General - Mix") {
+            breadcrumbs += ` &rarr; ${cap}`;
+        }
+        
+        // Afișăm Subcapitolul (care acum va fi uniformizat ca "Sintaxa frazei")
+        if (subcap && subcap !== "General" && subcap !== "") {
+            breadcrumbs += ` &rarr; ${subcap}`;
+        }
+        
         document.getElementById('q-meta').innerHTML = breadcrumbs;
 
         const btn = document.getElementById('btn-action');
         btn.disabled = true; btn.innerText = "Trimite Răspunsul"; btn.onclick = submitAnswer;
-        btn.className = "w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale";
+        btn.className = "w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale shadow-xl";
         
         if (state.currentMode === 'EXAM') {
             document.getElementById('exam-progress-text').innerText = `Grila ${state.idx + 1} din ${state.list.length}`;
@@ -510,26 +524,26 @@
             btn.innerText = state.idx === state.list.length - 1 ? "Finalizează Examenul" : "Salvează și Continuă";
         }
         
-        const modeBadge = document.getElementById('q-mode-badge'); const errorBorder = document.getElementById('quiz-badge-error');
-        if(state.currentMode === 'ERRORS') { modeBadge.classList.remove('hidden'); errorBorder.classList.remove('hidden'); }
-        else { modeBadge.classList.add('hidden'); errorBorder.classList.add('hidden'); }
-        
-        let txt = q.enunt; let gid = q.id || q.id_grila || "";
+        let txt = q.enunt || ""; 
+        let gid = q.id || q.id_grila || "";
         const m = txt.match(/^\s*(\d+)[\.\-\)]\s+/);
         if (m) { gid = gid || m[1]; txt = txt.replace(m[0], ''); }
         
-        let hasRule1 = false;
+        // --- 2. UNIFICARE SUBLINIERI PREMIUM GOLD ---
         txt = txt.replace(/(enun[tț]ul|fraza)\s*:\s*(.*?(?:\.|\!|\?))/gi, (match, prefix, continut) => {
-            hasRule1 = true;
             return `${prefix}: „${continut}”`;
         });
+        txt = txt.replace(/(cuv[aă]ntului)\s+["„«]?([^\s.,:;!?\)]+)["”»]?/gi, '$1 „$2”');
 
-        if (!hasRule1) {
-            txt = txt.replace(/(\(\d+\)\s*.*?(?:\.|\!|\?))/g, '„$1”');
-        }
+        const premiumUnderline = '<u class="decoration-academia-gold decoration-[2.5px] underline-offset-[4px] font-black text-academia-navy dark:text-white">$1</u>';
+        
+        txt = txt.replace(/\[\[u\]\](.*?)\[\[\/u\]\]/gi, premiumUnderline);
+        txt = txt.replace(/<u[^>]*>(.*?)<\/u>/gi, premiumUnderline);
+        txt = txt.replace(/\[\[(.*?)\]\]/g, premiumUnderline); 
+        txt = txt.replace(/\*(.*?)\*/g, premiumUnderline);      
 
         if (q.computedMaterie === 'Logică') {
-            txt = txt.replace(/\d+/g, '');
+            txt = txt.replace(/\s\d+\s/g, ' '); 
         }
 
         document.getElementById('q-text').innerHTML = `<div class="font-bold text-xl md:text-2xl leading-snug animate__animated animate__fadeIn text-academia-navy dark:text-white">${txt}</div>`;
@@ -539,10 +553,12 @@
         
         const cont = document.getElementById('q-options'); cont.innerHTML = "";
         ['var_a', 'var_b', 'var_c', 'var_d'].forEach(k => {
-            if (!q[k]) return;
-            const letter = k.split('_')[1].toUpperCase(); const opt = document.createElement('div');
+            const val = q[k];
+            if (!val) return;
+            const letter = k.split('_')[1].toUpperCase(); 
+            const opt = document.createElement('div');
             opt.className = "opt-card p-5 glass-card dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl cursor-pointer font-bold flex gap-4 items-center active-scale transition-all";
-            opt.innerHTML = `<span class="w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-sm font-black text-slate-400 dark:text-slate-400 flex-shrink-0 transition-colors">${letter}</span><span class="text-academia-navy dark:text-slate-200 text-lg leading-snug transition-colors">${q[k]}</span>`;
+            opt.innerHTML = `<span class="w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-sm font-black text-slate-400 dark:text-slate-400 flex-shrink-0 transition-colors">${letter}</span><span class="text-academia-navy dark:text-slate-200 text-lg leading-snug transition-colors">${val}</span>`;
             opt.onclick = () => {
                 if(state.step !== 'select') return;
                 document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('border-academia-gold', 'bg-academia-goldL', 'dark:bg-slate-900'));
@@ -556,91 +572,51 @@
     function submitAnswer() {
         if (state.step !== 'select') return;
         const q = state.list[state.idx];
-        const cor = q.raspuns_corect.trim().toUpperCase();
+        const cor = (q.raspuns_corect || "").trim().toUpperCase();
         const corIdx = ['A','B','C','D'].indexOf(cor); const corEl = document.querySelector(`.opt-card:nth-child(${corIdx + 1})`);
         
         document.querySelectorAll('.opt-card').forEach(c => c.classList.add('opacity-30'));
         [state.selectedEl, corEl].forEach(c => c?.classList.remove('opacity-30'));
         
-        let gid = q.id || q.id_grila || ""; const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/);
-        if (m) gid = gid || m[1];
-        gid = gid || state.idx; 
-
-        if (state.currentMode === 'EXAM') {
-            examState.userAnswers[gid] = state.selectedVal;
-            
-            state.idx++;
-            if (state.idx < state.list.length) {
-                renderQ();
-            } else {
-                finishExam();
-            }
-            return;
-        }
-
         const isCorrect = state.selectedVal === cor;
-        
         state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
         state.selectedEl.classList.add('text-white');
-        state.selectedEl.querySelectorAll('span').forEach(s => s.classList.remove('text-slate-400', 'dark:text-slate-400', 'text-academia-gold', 'border-slate-200', 'dark:border-slate-600', 'border-academia-gold'));
 
         if (isCorrect) {
             state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
             state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
-            if (currentUser) saveProgressToCloud(gid || state.idx, q.computedMaterie || state.currentSubject, 'corect');
+            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect');
         } else {
             state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
             state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
-            
             if (corEl) {
                 corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
                 corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-                corEl.querySelectorAll('span').forEach(s => {
-                    s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600');
-                    s.classList.add('text-white', 'border-white');
-                });
+                corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
             }
-            if (currentUser) saveProgressToCloud(gid || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
-        }
-        
-        if (!currentUser) {
-            const prompt = document.getElementById('auth-prompt');
-            const msgEl = document.getElementById('auth-prompt-msg');
-            msgEl.innerText = isCorrect 
-                ? "Corect! Salvează progresul pentru a nu mai primi această grilă." 
-                : "Ai greșit. Creează cont pentru a o salva în Modulul de Revizuire.";
-            prompt.classList.remove('hidden');
+            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
         }
         
         state.step = 'validate'; const btn = document.getElementById('btn-action');
         btn.innerText = "Continuă Navigarea \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
-        btn.onclick = () => { 
-            state.idx++; 
-            if (state.idx < state.list.length) {
-                renderQ(); 
-            } else { 
-                goBack(); 
-            } 
-        };
+        btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { goBack(); } };
     }
 
-    // NOU: Algoritm de Normalizare Date și Unificare Subcapitole
     function processRawData(data) {
         const formatString = (str, isEcoLog) => {
+            if (isEcoLog) return "General";
             if (!str) return "General";
             let cleaned = String(str).trim();
-            if (isEcoLog) {
-                cleaned = cleaned.replace(/\d+/g, '');
-                cleaned = cleaned.replace(/^[.\-\s]+/, '').trim();
-            }
-            if (!cleaned) return "General";
+            if (!cleaned || cleaned.toLowerCase() === "general") return "General";
             return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
         };
 
         return data.reduce((acc, item) => {
-            if (!item.materie || !item.enunt || String(item.enunt).trim() === "") return acc;
-            let rawM = String(item.materie).trim();
-            if (rawM.toLowerCase() === 'altele') return acc;
+            const materie = item.materie || item.MATERIE || item.Materie;
+            const enunt = item.enunt || item.ENUNT || item.Enunt;
+            if (!materie || !enunt || String(enunt).trim() === "") return acc;
+            
+            let rawM = String(materie).trim();
             let m = rawM;
             const lowerM = rawM.toLowerCase();
             let isEcoLog = false;
@@ -649,40 +625,35 @@
             else if (lowerM.includes('economie')) { m = 'Economie'; isEcoLog = true; }
             else if (lowerM.includes('gândire') || lowerM.includes('logic')) { m = 'Logică'; isEcoLog = true; }
 
-            // ----------------------------------------------------
-            // NORMALIZARE HISTORICĂ (Fixează direct baza de date din UI)
-            // ----------------------------------------------------
-            let cap = String(item.capitol || "").trim();
-            let sub = String(item.subcapitol || "").trim();
+            let cap = String(item.capitol || item.CAPITOL || item.Capitol || "").trim();
+            let sub = String(item.subcapitol || item.SUBCAPITOL || item.Subcapitol || item.sub || "").trim();
 
-            // 1. Curățare Denumire Gramatică
-            if (cap.includes("Gramatică (morfosintaxa")) {
-                cap = "Gramatică";
-            }
+            if (cap.includes("Gramatică (morfosintaxa")) cap = "Gramatică";
             
-            // 2. Unificare Subcapitole Sintaxă
+            // --- LOGICĂ DE UNIFORMIZARE SUBCAPITOL ---
             let subL = sub.toLowerCase();
-            if (subL.includes("enunțul") || subL.includes("fraza")) {
-                if(!subL.includes("morfosintaxa")) {
-                    sub = "Sintaxa frazei";
-                }
+            // Dacă subcapitolul conține termenii specificați, forțăm "Sintaxa frazei"
+            if (subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
+                sub = "Sintaxa frazei";
             }
 
-            // 3. Eliminare subcapitole pentru Economie și Logică
-            if (isEcoLog) {
-                sub = "General"; // Aceasta face ca subcapitolul să nu mai apară în meniu (sunt luate direct sub capitol)
-            }
-            // ----------------------------------------------------
-
-            item.capitol = formatString(cap, isEcoLog);
+            item.capitol = formatString(cap, false);
             item.subcapitol = formatString(sub, isEcoLog);
+            item.computedMaterie = m;
+
+            item.var_a = item.var_a || item.VAR_A || item.a;
+            item.var_b = item.var_b || item.VAR_B || item.b;
+            item.var_c = item.var_c || item.VAR_C || item.c;
+            item.var_d = item.var_d || item.VAR_D || item.d;
+            item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns;
 
             if (!acc[m]) acc[m] = [];
-            item.computedMaterie = m;
             acc[m].push(item);
             return acc;
         }, {});
     }
+
+
 
     async function init() {
         try {
@@ -690,17 +661,43 @@
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             await checkSession();
             
-            const res = await fetch(API_URL);
-            if(!res.ok) throw new Error("Eroare la extragerea datelor.");
-            const data = await res.json();
-            db = processRawData(data);
-            renderLobby();
+            // 1. STRATEGIA CACHE-FIRST (Încărcare Instantanee)
+            const cachedData = localStorage.getItem('grile_db_premium');
+            if (cachedData) {
+                console.log("Se încarcă din Cache (Instant)");
+                db = JSON.parse(cachedData);
+                renderLobby();
+                document.getElementById('scr-loading').classList.add('hidden');
+            } else {
+                document.getElementById('scr-loading').classList.remove('hidden');
+            }
+            
+            // 2. FETCH ÎN FUNDAL (Actualizare tăcută)
+            fetch(API_URL)
+                .then(res => {
+                    if(!res.ok) throw new Error("Eroare rețea");
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("Sincronizare Google Sheets finalizată");
+                    const freshDb = processRawData(data);
+                    localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
+                    
+                    // Dacă este prima vizită a utilizatorului, randează acum
+                    if (!cachedData) {
+                        db = freshDb;
+                        renderLobby();
+                        document.getElementById('scr-loading').classList.add('hidden');
+                    }
+                })
+                .catch(err => console.log("Avertisment fetch fundal:", err));
             
         } catch(e) {
             document.getElementById('error-details').innerText = e.message;
             navigateTo('scr-error');
         }
     }
+
 
     function renderLobby() {
         const list = document.getElementById('subject-list'); list.innerHTML = "";
