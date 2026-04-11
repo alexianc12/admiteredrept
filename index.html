@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admitere Drept - Platformă Grile</title>
-    <meta name="description" content="Pregătire pentru admiterea la Drept.">
+    <meta name="description" content="Pregătire premium pentru admiterea la Drept.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -55,7 +55,6 @@
     
     <nav id="main-nav" class="fixed top-0 w-full z-50 px-6 py-4 glass-card border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm transition-colors duration-300">
         <div class="flex items-center gap-4">
-            <button id="btn-back" class="text-academia-gold font-black text-2xl hidden bg-transparent border-none p-0 cursor-pointer hover:-translate-x-1 transition-transform" onclick="goBack()">&#8592;</button>
             <button class="font-black text-xl tracking-tighter uppercase bg-transparent border-none p-0 text-academia-navy dark:text-white cursor-pointer" onclick="navigateTo('scr-lobby')">
                 <span class="text-academia-gold">GRILE</span>ADMITERE<span class="text-academia-gold">DREPT</span>
             </button>
@@ -224,7 +223,6 @@
     let db = {};
     let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [] };
 
-    // Variabile pentru modul Examen
     let examState = {
         isActive: false,
         timer: null,
@@ -242,11 +240,10 @@
         let pool = [];
 
         if (countVal === 100) {
-            // Logica EXACTĂ pentru examenul oficial: 35 Gramatică, 15 Ortografie, 30 Economie, 20 Logică
             let gramatica = (db['Limba română'] || []).filter(q => q.capitol && q.capitol.toLowerCase().includes('gramatic')).sort(() => Math.random() - 0.5).slice(0, 35);
             let ortografie = (db['Limba română'] || []).filter(q => q.capitol && (q.capitol.toLowerCase().includes('ortografie') || q.capitol.toLowerCase().includes('lexic'))).sort(() => Math.random() - 0.5).slice(0, 15);
             let economie = (db['Economie'] || []).sort(() => Math.random() - 0.5).slice(0, 30);
-            let logica = (db['Logică'] || []).sort(() => Math.random() - 0.5).slice(0, 20); // Reparata eroarea de cautare ('Logică')
+            let logica = (db['Logică'] || []).sort(() => Math.random() - 0.5).slice(0, 20); 
             
             pool = [...gramatica, ...ortografie, ...economie, ...logica];
         } else {
@@ -313,8 +310,6 @@
         ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(id);
         if(target) { target.classList.remove('hidden'); target.classList.add('animate__fadeIn'); }
-        const btnBack = document.getElementById('btn-back');
-        if(btnBack) btnBack.classList.toggle('hidden', id === 'scr-lobby' || id === 'scr-loading');
     }
 
     document.addEventListener('click', (e) => {
@@ -569,9 +564,8 @@
         
         let gid = q.id || q.id_grila || ""; const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/);
         if (m) gid = gid || m[1];
-        gid = gid || state.idx; // Fallback pentru siguranta stocarii in array
+        gid = gid || state.idx; 
 
-        // LOGICĂ EXAMEN: Trecere instantă, fără culori de feedback și fără lag
         if (state.currentMode === 'EXAM') {
             examState.userAnswers[gid] = state.selectedVal;
             
@@ -630,6 +624,7 @@
         };
     }
 
+    // NOU: Algoritm de Normalizare Date și Unificare Subcapitole
     function processRawData(data) {
         const formatString = (str, isEcoLog) => {
             if (!str) return "General";
@@ -649,14 +644,38 @@
             let m = rawM;
             const lowerM = rawM.toLowerCase();
             let isEcoLog = false;
+            
             if (lowerM.includes('română')) m = 'Limba română';
             else if (lowerM.includes('economie')) { m = 'Economie'; isEcoLog = true; }
-            else if (lowerM.includes('gândire') || lowerM.includes('gandire') || lowerM.includes('logic')  || lowerM.includes('Logic')) { m = 'Logică'; isEcoLog = true; }
+            else if (lowerM.includes('gândire') || lowerM.includes('logic')) { m = 'Logică'; isEcoLog = true; }
 
-            item.capOrder = parseInt((String(item.capitol || "")).match(/\d+/)) || 999;
-            item.subOrder = parseInt((String(item.subcapitol || "")).match(/\d+/)) || 999;
-            item.capitol = formatString(item.capitol, isEcoLog);
-            item.subcapitol = formatString(item.subcapitol, isEcoLog);
+            // ----------------------------------------------------
+            // NORMALIZARE HISTORICĂ (Fixează direct baza de date din UI)
+            // ----------------------------------------------------
+            let cap = String(item.capitol || "").trim();
+            let sub = String(item.subcapitol || "").trim();
+
+            // 1. Curățare Denumire Gramatică
+            if (cap.includes("Gramatică (morfosintaxa")) {
+                cap = "Gramatică";
+            }
+            
+            // 2. Unificare Subcapitole Sintaxă
+            let subL = sub.toLowerCase();
+            if (subL.includes("enunțul") || subL.includes("fraza")) {
+                if(!subL.includes("morfosintaxa")) {
+                    sub = "Sintaxa frazei";
+                }
+            }
+
+            // 3. Eliminare subcapitole pentru Economie și Logică
+            if (isEcoLog) {
+                sub = "General"; // Aceasta face ca subcapitolul să nu mai apară în meniu (sunt luate direct sub capitol)
+            }
+            // ----------------------------------------------------
+
+            item.capitol = formatString(cap, isEcoLog);
+            item.subcapitol = formatString(sub, isEcoLog);
 
             if (!acc[m]) acc[m] = [];
             item.computedMaterie = m;
@@ -670,26 +689,13 @@
             if(!window.supabase) throw new Error("Dependență lipsă: Supabase CDN.");
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             await checkSession();
-            const cached = localStorage.getItem('grile_db');
-            if (cached) {
-                db = processRawData(JSON.parse(cached));
-                renderLobby();
-                fetch(API_URL).then(r=>r.json()).then(data => {
-                    const newDataStr = JSON.stringify(data);
-                    if(cached !== newDataStr) {
-                        localStorage.setItem('grile_db', newDataStr);
-                        db = processRawData(data);
-                        renderLobby();
-                    }
-                }).catch(e => {});
-            } else {
-                const res = await fetch(API_URL);
-                if(!res.ok) throw new Error("Eroare la extragerea datelor.");
-                const data = await res.json();
-                localStorage.setItem('grile_db', JSON.stringify(data));
-                db = processRawData(data);
-                renderLobby();
-            }
+            
+            const res = await fetch(API_URL);
+            if(!res.ok) throw new Error("Eroare la extragerea datelor.");
+            const data = await res.json();
+            db = processRawData(data);
+            renderLobby();
+            
         } catch(e) {
             document.getElementById('error-details').innerText = e.message;
             navigateTo('scr-error');
@@ -714,29 +720,25 @@
         db[m].forEach(q => {
             const c = q.capitol || "General - Mix";
             const sc = q.subcapitol || "General";
-            if (!capsData[c]) capsData[c] = { order: q.capOrder, subcaps: {} };
-            if (q.capOrder < capsData[c].order) capsData[c].order = q.capOrder;
+            if (!capsData[c]) capsData[c] = { subcaps: {} };
             if (sc !== "General") {
-                if (!capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = q.subOrder;
-                if (q.subOrder < capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = q.subOrder;
+                if (!capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = 1;
             }
         });
+        
         let sortedCaps = Object.keys(capsData);
-        if (m === 'Limba română') {
-            sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
-        } else {
-            sortedCaps.sort((a, b) => capsData[a].order - capsData[b].order);
-        }
+        // NOU: Sortare Capitole - Strict Alfabetic pentru Toate Materiile
+        sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
+
         const cont = document.getElementById('filter-list'); cont.innerHTML = "";
         sortedCaps.forEach(cap => {
             const capId = 'cap_' + cap.replace(/[\s\W]+/g, '');
             let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
             const subKeys = Object.keys(capsData[cap].subcaps);
-            if (m === 'Limba română') {
-                subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
-            } else {
-                subKeys.sort((a, b) => capsData[cap].subcaps[a] - capsData[cap].subcaps[b]);
-            }
+            
+            // NOU: Sortare Subcapitole - Strict Alfabetic pentru Toate Materiile
+            subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
+            
             if (subKeys.length > 0) {
                 html += `
                     <div class="flex items-center p-5 cursor-pointer select-none" onclick="toggleAccordion('${capId}')">
