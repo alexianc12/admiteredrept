@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -6,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admitere Drept - Platformă Grile</title>
     <meta name="description" content="Pregătire premium pentru admiterea la Drept.">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q2XGH2Q1XD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-Q2XGH2Q1XD');
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -507,7 +516,6 @@ function renderQ() {
             breadcrumbs += ` &rarr; ${cap}`;
         }
         
-        // Afișăm Subcapitolul (care acum va fi uniformizat ca "Sintaxa frazei")
         if (subcap && subcap !== "General" && subcap !== "") {
             breadcrumbs += ` &rarr; ${subcap}`;
         }
@@ -529,7 +537,18 @@ function renderQ() {
         const m = txt.match(/^\s*(\d+)[\.\-\)]\s+/);
         if (m) { gid = gid || m[1]; txt = txt.replace(m[0], ''); }
         
-        // --- 2. UNIFICARE SUBLINIERI PREMIUM GOLD ---
+        // --- 2. CONVERSIE MATEMATICĂ (LaTeX -> HTML Nativ) ---
+        txt = txt.replace(/\$/g, ''); // Elimină simbolul $
+        // Indici (ex: P_{1} sau P_1)
+        txt = txt.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
+        txt = txt.replace(/_([a-zA-Z0-9])/g, '<sub>$1</sub>');
+        // Puteri (ex: X^{2} sau X^2)
+        txt = txt.replace(/\^\{([^\}]+)\}/g, '<sup>$1</sup>');
+        txt = txt.replace(/\^([a-zA-Z0-9])/g, '<sup>$1</sup>');
+        // Înmulțire (\cdot -> ·)
+        txt = txt.replace(/\\cdot/g, '&middot;');
+
+        // --- 3. PROCESARE TEXT: GHILIMELE ȘI SUBLINIERI ---
         txt = txt.replace(/(enun[tț]ul|fraza)\s*:\s*(.*?(?:\.|\!|\?))/gi, (match, prefix, continut) => {
             return `${prefix}: „${continut}”`;
         });
@@ -553,8 +572,19 @@ function renderQ() {
         
         const cont = document.getElementById('q-options'); cont.innerHTML = "";
         ['var_a', 'var_b', 'var_c', 'var_d'].forEach(k => {
-            const val = q[k];
+            let val = q[k];
             if (!val) return;
+            
+            // APLICARE CONVERSIE MATEMATICĂ ȘI PE VARIANTE
+            if (typeof val === 'string') {
+                val = val.replace(/\$/g, '');
+                val = val.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
+                val = val.replace(/_([a-zA-Z0-9])/g, '<sub>$1</sub>');
+                val = val.replace(/\^\{([^\}]+)\}/g, '<sup>$1</sup>');
+                val = val.replace(/\^([a-zA-Z0-9])/g, '<sup>$1</sup>');
+                val = val.replace(/\\cdot/g, '&middot;');
+            }
+            
             const letter = k.split('_')[1].toUpperCase(); 
             const opt = document.createElement('div');
             opt.className = "opt-card p-5 glass-card dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl cursor-pointer font-bold flex gap-4 items-center active-scale transition-all";
@@ -630,11 +660,9 @@ function renderQ() {
 
             if (cap.includes("Gramatică (morfosintaxa")) cap = "Gramatică";
             
-            // --- LOGICĂ DE UNIFORMIZARE SUBCAPITOL ---
             let subL = sub.toLowerCase();
-            // Dacă subcapitolul conține termenii specificați, forțăm "Sintaxa frazei"
-            if (subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
-                sub = "Sintaxa frazei";
+            if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
+                sub = "Enunțul, propoziția și fraza";
             }
 
             item.capitol = formatString(cap, false);
@@ -652,6 +680,7 @@ function renderQ() {
             return acc;
         }, {});
     }
+
 
 
 
