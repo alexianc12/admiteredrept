@@ -3,16 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admitere Drept - Platformă Grile</title>
-    <meta name="description" content="Pregătire premium pentru admiterea la Drept.">
     
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q2XGH2Q1XD"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    <title>Grile Admitere Drept UB | Română, Logică, Economie</title>
+    <meta name="description" content="Platformă pentru admiterea la Facultatea de Drept. Rezolvă grile la Limba Română, Logică și Economie. Mod simulare examen cu timer.">
+    <meta name="keywords" content="grile admitere drept, admitere drept ub, simulare drept bucuresti, grile economie drept, grile logica, admitere drept 2026">
+    <meta name="robots" content="index, follow">
 
-      gtag('config', 'G-Q2XGH2Q1XD');
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://domeniul-tau.ro/">
+    <meta property="og:title" content="Grile Admitere Drept">
+    <meta property="og:description" content="Grile de examen și simulări. Mod de noapte, salvarea greșelilor și timer inclus.">
+    <meta property="og:image" content="https://grileadmiteredrept.vercel.app/"> 
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Simulator Grile Admitere Drept",
+      "url": "https://domeniul-tau.ro/",
+      "description": "Simulator online pentru examenul de admitere la Facultatea de Drept. Include grile de Limba Română, Economie și Logică.",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RON"
+      }
+    }
+    </script>
+
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group reset groups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('phc_wnkPhxa5oCax7Ua4EBRvjHFVvVo7M54vYTZy4fKYQKNu', {
+            api_host: 'https://eu.i.posthog.com',
+            person_profiles: 'identified_only',
+            autocapture: false
+        });
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,7 +71,6 @@
         ::-webkit-scrollbar-thumb { background: #C19A6B; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         
-        /* Subtle Glassmorphism & Dark Mode Variables */
         :root { --glass: rgba(255, 255, 255, 0.85); --glass-border: rgba(255, 255, 255, 0.4); }
         .dark { --glass: rgba(26, 34, 56, 0.85); --glass-border: rgba(255, 255, 255, 0.1); }
         .glass-card { 
@@ -401,6 +425,11 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user || null;
             if (currentUser) {
+                // Sincronizare profil utilizator PostHog
+                try { 
+                    posthog.identify(currentUser.id, { email: currentUser.email }); 
+                } catch(e) {}
+                
                 const { data } = await supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
                 if (data) {
                     state.rawProgress = data;
@@ -437,9 +466,12 @@
 
     async function handleLogin() {
         const e = document.getElementById('auth-email').value; const p = document.getElementById('auth-password').value;
-        const { error } = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
+        const { error, data } = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
         if (error) { const errEl = document.getElementById('auth-error'); errEl.innerText = "Date incorecte."; errEl.classList.remove('hidden'); } 
-        else { closeAuthModal(); window.location.reload(); }
+        else { 
+            try { posthog.capture('login_success'); } catch(err){}
+            closeAuthModal(); window.location.reload(); 
+        }
     }
 
     async function handleRegister() {
@@ -447,10 +479,17 @@
         if (!e || p.length < 6) return;
         const { error } = await supabaseClient.auth.signUp({ email: e, password: p });
         if (error) { const errEl = document.getElementById('auth-error'); errEl.innerText = error.message; errEl.classList.remove('hidden'); } 
-        else { closeAuthModal(); window.location.reload(); }
+        else { 
+            try { posthog.capture('register_success'); } catch(err){}
+            closeAuthModal(); window.location.reload(); 
+        }
     }
 
-    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.reload(); }
+    async function handleLogout() { 
+        try { posthog.reset(); } catch(e){} 
+        await supabaseClient.auth.signOut(); 
+        window.location.reload(); 
+    }
 
     function toggleAccordion(capId) {
         const wrap = document.getElementById(capId + '_wrap');
@@ -497,6 +536,12 @@
         
         state.list = pool.sort(() => Math.random() - 0.5);
         state.idx = 0;
+        
+        // Tracking PostHog pentru filtrare
+        try { 
+            posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); 
+        } catch(e){}
+        
         navigateTo('scr-quiz'); renderQ();
     }
 
@@ -506,19 +551,12 @@ function renderQ() {
         document.getElementById('auth-prompt').classList.add('hidden');
         const q = state.list[state.idx];
         
-        // --- 1. LOGICĂ BREADCRUMBS (MATERIE > CAPITOL > SUBCAPITOL) ---
         let breadcrumbs = q.computedMaterie || state.currentSubject || 'Mix Global';
-        
         const cap = q.capitol || "";
         const subcap = q.subcapitol || "";
         
-        if (cap && cap !== "General" && cap !== "General - Mix") {
-            breadcrumbs += ` &rarr; ${cap}`;
-        }
-        
-        if (subcap && subcap !== "General" && subcap !== "") {
-            breadcrumbs += ` &rarr; ${subcap}`;
-        }
+        if (cap && cap !== "General" && cap !== "General - Mix") breadcrumbs += ` &rarr; ${cap}`;
+        if (subcap && subcap !== "General" && subcap !== "") breadcrumbs += ` &rarr; ${subcap}`;
         
         document.getElementById('q-meta').innerHTML = breadcrumbs;
 
@@ -537,18 +575,13 @@ function renderQ() {
         const m = txt.match(/^\s*(\d+)[\.\-\)]\s+/);
         if (m) { gid = gid || m[1]; txt = txt.replace(m[0], ''); }
         
-        // --- 2. CONVERSIE MATEMATICĂ (LaTeX -> HTML Nativ) ---
-        txt = txt.replace(/\$/g, ''); // Elimină simbolul $
-        // Indici (ex: P_{1} sau P_1)
+        txt = txt.replace(/\$/g, ''); 
         txt = txt.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
         txt = txt.replace(/_([a-zA-Z0-9])/g, '<sub>$1</sub>');
-        // Puteri (ex: X^{2} sau X^2)
         txt = txt.replace(/\^\{([^\}]+)\}/g, '<sup>$1</sup>');
         txt = txt.replace(/\^([a-zA-Z0-9])/g, '<sup>$1</sup>');
-        // Înmulțire (\cdot -> ·)
         txt = txt.replace(/\\cdot/g, '&middot;');
 
-        // --- 3. PROCESARE TEXT: GHILIMELE ȘI SUBLINIERI ---
         txt = txt.replace(/(enun[tț]ul|fraza)\s*:\s*(.*?(?:\.|\!|\?))/gi, (match, prefix, continut) => {
             return `${prefix}: „${continut}”`;
         });
@@ -575,7 +608,6 @@ function renderQ() {
             let val = q[k];
             if (!val) return;
             
-            // APLICARE CONVERSIE MATEMATICĂ ȘI PE VARIANTE
             if (typeof val === 'string') {
                 val = val.replace(/\$/g, '');
                 val = val.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
@@ -605,6 +637,10 @@ function renderQ() {
         const cor = (q.raspuns_corect || "").trim().toUpperCase();
         const corIdx = ['A','B','C','D'].indexOf(cor); const corEl = document.querySelector(`.opt-card:nth-child(${corIdx + 1})`);
         
+        let gid = q.id || q.id_grila || "";
+        const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
+        if (matchGid) gid = gid || matchGid[1];
+        
         document.querySelectorAll('.opt-card').forEach(c => c.classList.add('opacity-30'));
         [state.selectedEl, corEl].forEach(c => c?.classList.remove('opacity-30'));
         
@@ -616,6 +652,9 @@ function renderQ() {
             state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
             state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
             if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect');
+            
+            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
+            
         } else {
             state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
             state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
@@ -625,12 +664,28 @@ function renderQ() {
                 corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
             }
             if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
+            
+            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
+        }
+        
+        if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
+        
+        // LOGICĂ NOUĂ: Afișare Prompt Autentificare pentru utilizatorii neconectați
+        if (!currentUser && state.currentMode !== 'EXAM') {
+            document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează.";
+            document.getElementById('auth-prompt').classList.remove('hidden');
         }
         
         state.step = 'validate'; const btn = document.getElementById('btn-action');
         btn.innerText = "Continuă Navigarea \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
-        btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { goBack(); } };
+
+        btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } };
     }
+
+
+
+
+
 
     function processRawData(data) {
         const formatString = (str, isEcoLog) => {
@@ -681,19 +736,14 @@ function renderQ() {
         }, {});
     }
 
-
-
-
     async function init() {
         try {
             if(!window.supabase) throw new Error("Dependență lipsă: Supabase CDN.");
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             await checkSession();
             
-            // 1. STRATEGIA CACHE-FIRST (Încărcare Instantanee)
             const cachedData = localStorage.getItem('grile_db_premium');
             if (cachedData) {
-                console.log("Se încarcă din Cache (Instant)");
                 db = JSON.parse(cachedData);
                 renderLobby();
                 document.getElementById('scr-loading').classList.add('hidden');
@@ -701,18 +751,15 @@ function renderQ() {
                 document.getElementById('scr-loading').classList.remove('hidden');
             }
             
-            // 2. FETCH ÎN FUNDAL (Actualizare tăcută)
             fetch(API_URL)
                 .then(res => {
                     if(!res.ok) throw new Error("Eroare rețea");
                     return res.json();
                 })
                 .then(data => {
-                    console.log("Sincronizare Google Sheets finalizată");
                     const freshDb = processRawData(data);
                     localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
                     
-                    // Dacă este prima vizită a utilizatorului, randează acum
                     if (!cachedData) {
                         db = freshDb;
                         renderLobby();
@@ -727,13 +774,15 @@ function renderQ() {
         }
     }
 
-
     function renderLobby() {
         const list = document.getElementById('subject-list'); list.innerHTML = "";
         Object.keys(db).forEach(m => {
             const d = document.createElement('div');
             d.className = "p-6 glass-card dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-3xl cursor-pointer hover:border-academia-gold transition-all active-scale font-black text-xl flex justify-between items-center group shadow-sm";
-            d.onclick = () => openFilter(m);
+            d.onclick = () => {
+                try { posthog.capture('materie_selectata', { materie: m }); } catch(err){}
+                openFilter(m);
+            };
             d.innerHTML = `<span class="dark:text-white">${m}</span> <span class="text-academia-gold group-hover:translate-x-2 transition-transform">&rarr;</span>`;
             list.appendChild(d);
         });
@@ -753,7 +802,6 @@ function renderQ() {
         });
         
         let sortedCaps = Object.keys(capsData);
-        // NOU: Sortare Capitole - Strict Alfabetic pentru Toate Materiile
         sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
 
         const cont = document.getElementById('filter-list'); cont.innerHTML = "";
@@ -762,7 +810,6 @@ function renderQ() {
             let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
             const subKeys = Object.keys(capsData[cap].subcaps);
             
-            // NOU: Sortare Subcapitole - Strict Alfabetic pentru Toate Materiile
             subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
             
             if (subKeys.length > 0) {
@@ -808,14 +855,23 @@ function renderQ() {
             gid = gid || index;
 
             let raspunsElev = examState.userAnswers[gid] || "N/A";
-            let raspunsCorect = q.raspuns_corect.trim().toUpperCase();
+            let raspunsCorect = (q.raspuns_corect || "").trim().toUpperCase();
             let status = (raspunsElev === raspunsCorect) ? 'corect' : 'gresit';
             
             if (status === 'corect') scor++;
-            if (currentUser) saveProgressToCloud(gid, q.computedMaterie, status);
         });
         
         let procent = Math.round((scor / state.list.length) * 100);
+        
+        // PostHog Tracking pentru Examen Finalizat
+        try {
+            posthog.capture('examen_finalizat', { 
+                scor: scor, 
+                total_grile: state.list.length, 
+                acuratete: procent,
+                timp_ramas_secunde: examState.timeLeftSec
+            });
+        } catch(e) {}
         
         const quizCard = document.querySelector('#scr-quiz > div');
         quizCard.innerHTML = `
