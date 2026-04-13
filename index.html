@@ -45,9 +45,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -81,6 +80,7 @@
         }
     </style>
 </head>
+
 <body class="bg-slate-50 dark:bg-slate-950 text-academia-navy dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
     <div id="scr-loading" class="fixed inset-0 z-[200] bg-white dark:bg-slate-950 flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-slate-100 dark:border-slate-800 border-t-academia-gold rounded-full animate-spin mb-4"></div>
@@ -93,13 +93,18 @@
                 <span class="text-academia-gold">GRILE</span>ADMITERE<span class="text-academia-gold">DREPT</span>
             </button>
         </div>
-        <div class="flex items-center gap-2 relative">
-            <button onclick="toggleDarkMode()" class="text-academia-gold bg-transparent border-none cursor-pointer hover:scale-110 transition-transform mr-1">
+        <div class="flex items-center gap-3 relative">
+            <div id="streak-container" class="hidden flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800 transition-all">
+                <span class="text-orange-500 text-sm leading-none">🔥</span>
+                <span id="streak-count" class="font-black text-orange-600 dark:text-orange-400 text-sm leading-none">0</span>
+            </div>
+            <button onclick="toggleDarkMode()" class="text-academia-gold bg-transparent border-none cursor-pointer hover:scale-110 transition-transform">
                 <svg id="dark-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
             <button id="btn-profile" onclick="toggleProfileMenu()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:text-academia-gold transition-all border-none cursor-pointer">
                 <svg class="w-5 h-5 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </button>
+            
             <div id="profile-menu" class="hidden absolute right-0 top-full mt-3 w-80 glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl py-0 z-50 overflow-hidden transition-colors duration-300">
                 <div id="menu-logged-out" class="p-4">
                     <button onclick="showAuthModal()" class="w-full py-3 bg-academia-navy text-academia-gold rounded-xl font-bold text-sm border-none cursor-pointer hover:shadow-lg transition-all">Logare / Cont Nou</button>
@@ -239,9 +244,9 @@
                     <input id="auth-password" type="password" placeholder="Parolă" class="w-full px-6 py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 dark:bg-slate-800 focus:border-academia-gold outline-none font-bold text-academia-navy dark:text-white transition-colors duration-300">
                     <div id="auth-error" class="hidden text-rose-500 text-xs font-black text-center"></div>
                     <div class="grid grid-cols-2 gap-4 mt-2">
-                        <button onclick="handleRegister()" class="py-4 bg-slate-50 dark:bg-slate-800 text-academia-navy dark:text-white border-2 border-slate-100 dark:border-slate-700 rounded-xl font-black hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer">Cont Nou</button>
-                        <button onclick="handleLogin()" class="py-4 bg-academia-navy text-academia-gold rounded-xl font-black hover:shadow-lg transition-all border-none cursor-pointer">Conectare</button>
-                    </div>
+    <button onclick="handleRegister()" class="py-4 bg-academia-navy text-academia-gold rounded-xl font-black hover:shadow-lg transition-all border-none cursor-pointer">Cont Nou</button>
+    <button onclick="handleLogin()" class="py-4 bg-slate-50 dark:bg-slate-800 text-academia-navy dark:text-white border-2 border-slate-100 dark:border-slate-700 rounded-xl font-black hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer">Conectare</button>
+</div>
                 </div>
             </div>
         </div>
@@ -255,7 +260,7 @@
     let supabaseClient;
     let currentUser = null;        
     let db = {};
-    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [] };
+    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 };
 
     let examState = {
         isActive: false,
@@ -425,23 +430,82 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user || null;
             if (currentUser) {
-                // Sincronizare profil utilizator PostHog
-                try { 
-                    posthog.identify(currentUser.id, { email: currentUser.email }); 
-                } catch(e) {}
+                try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
                 
-                const { data } = await supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
+                const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
+                updateStreak(); 
+                
+                const { data } = await progressPromise;
                 if (data) {
                     state.rawProgress = data;
                     state.corecte = data.filter(d => d.status === 'corect').map(d => String(d.grila_id));
                     state.gresite = data.filter(d => d.status === 'gresit').map(d => String(d.grila_id));
                 }
+                
                 document.getElementById('auth-prompt')?.classList.add('hidden');
             }
             updateProfileUI(); updateLobbyUI();
-        } catch(e) {}
+        } catch(e) { console.error("Eroare sesiune:", e); }
     }
 
+    async function updateStreak() {
+        // Dacă nu e logat, ascundem focul
+        if (!currentUser) {
+            document.getElementById('streak-container').classList.add('hidden');
+            return;
+        }
+        
+        // FORȚĂM AFIȘAREA IMEDIATĂ LA LOGARE (cu valoarea 0 sau ce e în memorie)
+        document.getElementById('streak-container').classList.remove('hidden');
+        document.getElementById('streak-count').innerText = state.streak || 0;
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        try {
+            let { data, error } = await supabaseClient
+                .from('user_profiles')
+                .select('last_active_date, current_streak')
+                .eq('user_id', currentUser.id)
+                .single();
+
+            if (error && error.code === 'PGRST116') {
+                 const { data: newData } = await supabaseClient
+                    .from('user_profiles')
+                    .insert([{ user_id: currentUser.id, last_active_date: today, current_streak: 1 }])
+                    .select()
+                    .single();
+                 data = newData;
+            }
+
+            if (data) {
+                let newStreak = data.current_streak;
+                const lastDate = data.last_active_date;
+
+                if (lastDate !== today) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                    if (lastDate === yesterdayStr) {
+                        newStreak++;
+                    } else {
+                        newStreak = 1; 
+                    }
+                    
+                    await supabaseClient.from('user_profiles').update({
+                        last_active_date: today,
+                        current_streak: newStreak
+                    }).eq('user_id', currentUser.id);
+                }
+                
+                // ACTUALIZĂM UI-ul CU VALOAREA REALĂ DIN BAZA DE DATE
+                state.streak = newStreak;
+                document.getElementById('streak-count').innerText = newStreak;
+            }
+        } catch (e) {
+            console.log("Conexiunea la tabela de streak nu este încă activă.");
+        }
+    }
     async function saveProgressToCloud(grilaId, materie, statusStr) {
         if (!currentUser) return;
         const idStr = String(grilaId);
@@ -464,23 +528,56 @@
         }
     }
 
-    async function handleLogin() {
-        const e = document.getElementById('auth-email').value; const p = document.getElementById('auth-password').value;
-        const { error, data } = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
-        if (error) { const errEl = document.getElementById('auth-error'); errEl.innerText = "Date incorecte."; errEl.classList.remove('hidden'); } 
+    async function handleRegister() {
+        const e = document.getElementById('auth-email').value; 
+        const p = document.getElementById('auth-password').value;
+        const errEl = document.getElementById('auth-error');
+        
+        // 1. Validare activă înainte de a consuma resurse pe server
+        if (!e) {
+            errEl.innerText = "Te rugăm să introduci un email valid.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (p.length < 6) {
+            errEl.innerText = "Parola trebuie să aibă minim 6 caractere.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        // 2. Apelul către Supabase
+        const { error } = await supabaseClient.auth.signUp({ email: e, password: p });
+        
+        if (error) { 
+            // Traducem erorile tehnice în mesaje umane
+            errEl.innerText = error.message === "User already registered" ? "Acest email are deja cont. Folosește butonul Conectare." : error.message; 
+            errEl.classList.remove('hidden'); 
+        } 
         else { 
-            try { posthog.capture('login_success'); } catch(err){}
+            try { posthog.capture('register_success'); } catch(err){}
             closeAuthModal(); window.location.reload(); 
         }
     }
 
-    async function handleRegister() {
-        const e = document.getElementById('auth-email').value; const p = document.getElementById('auth-password').value;
-        if (!e || p.length < 6) return;
-        const { error } = await supabaseClient.auth.signUp({ email: e, password: p });
-        if (error) { const errEl = document.getElementById('auth-error'); errEl.innerText = error.message; errEl.classList.remove('hidden'); } 
+    async function handleLogin() {
+        const e = document.getElementById('auth-email').value; 
+        const p = document.getElementById('auth-password').value;
+        const errEl = document.getElementById('auth-error');
+
+        if (!e || !p) {
+            errEl.innerText = "Te rugăm să completezi ambele câmpuri.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        const { error, data } = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
+        
+        if (error) { 
+            errEl.innerText = error.message === "Invalid login credentials" ? "Email sau parolă incorectă." : error.message; 
+            errEl.classList.remove('hidden'); 
+        } 
         else { 
-            try { posthog.capture('register_success'); } catch(err){}
+            try { posthog.capture('login_success'); } catch(err){}
             closeAuthModal(); window.location.reload(); 
         }
     }
@@ -537,7 +634,6 @@
         state.list = pool.sort(() => Math.random() - 0.5);
         state.idx = 0;
         
-        // Tracking PostHog pentru filtrare
         try { 
             posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); 
         } catch(e){}
@@ -670,7 +766,6 @@ function renderQ() {
         
         if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
         
-        // LOGICĂ NOUĂ: Afișare Prompt Autentificare pentru utilizatorii neconectați
         if (!currentUser && state.currentMode !== 'EXAM') {
             document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează.";
             document.getElementById('auth-prompt').classList.remove('hidden');
@@ -682,12 +777,7 @@ function renderQ() {
         btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } };
     }
 
-
-
-
-
-
-    function processRawData(data) {
+function processRawData(data) {
         const formatString = (str, isEcoLog) => {
             if (isEcoLog) return "General";
             if (!str) return "General";
@@ -713,11 +803,23 @@ function renderQ() {
             let cap = String(item.capitol || item.CAPITOL || item.Capitol || "").trim();
             let sub = String(item.subcapitol || item.SUBCAPITOL || item.Subcapitol || item.sub || "").trim();
 
-            if (cap.includes("Gramatică (morfosintaxa")) cap = "Gramatică";
-            
+            let capL = cap.toLowerCase();
             let subL = sub.toLowerCase();
+
+            // UNIFICARE CAPITOL
+            if (capL.includes("gramatică") || capL.includes("gramatica")) cap = "Gramatică";
+            if (capL.includes("ortografie") || capL.includes("ortoepie") || capL.includes("lexico-semantice")) {
+                cap = "Ortografie, ortoepie și punctuație";
+            }
+            
+            // UNIFICARE SUBCAPITOL (Păstrăm detaliile, dar unificăm variantele de sintaxă)
             if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
                 sub = "Enunțul, propoziția și fraza";
+            }
+            
+            // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
+            if (sub.toLowerCase().trim() === cap.toLowerCase().trim()) {
+                sub = "General";
             }
 
             item.capitol = formatString(cap, false);
@@ -736,20 +838,25 @@ function renderQ() {
         }, {});
     }
 
+
     async function init() {
         try {
-            if(!window.supabase) throw new Error("Dependență lipsă: Supabase CDN.");
+            if(!window.supabase) {
+                setTimeout(init, 100); 
+                return;
+            }
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            await checkSession();
             
             const cachedData = localStorage.getItem('grile_db_premium');
             if (cachedData) {
                 db = JSON.parse(cachedData);
                 renderLobby();
-                document.getElementById('scr-loading').classList.add('hidden');
+                document.getElementById('scr-loading').classList.add('hidden'); 
             } else {
                 document.getElementById('scr-loading').classList.remove('hidden');
             }
+            
+            checkSession().catch(e => console.log("Auth silent fail"));
             
             fetch(API_URL)
                 .then(res => {
@@ -770,6 +877,7 @@ function renderQ() {
             
         } catch(e) {
             document.getElementById('error-details').innerText = e.message;
+            document.getElementById('scr-loading').classList.add('hidden');
             navigateTo('scr-error');
         }
     }
@@ -790,8 +898,10 @@ function renderQ() {
     }
 
     function openFilter(m) {
-        state.currentSubject = m; document.getElementById('filter-title').innerText = m;
+        state.currentSubject = m; 
+        document.getElementById('filter-title').innerText = m;
         const capsData = {};
+        
         db[m].forEach(q => {
             const c = q.capitol || "General - Mix";
             const sc = q.subcapitol || "General";
@@ -804,12 +914,15 @@ function renderQ() {
         let sortedCaps = Object.keys(capsData);
         sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
 
-        const cont = document.getElementById('filter-list'); cont.innerHTML = "";
+        const cont = document.getElementById('filter-list'); 
+        cont.innerHTML = "";
+
         sortedCaps.forEach(cap => {
-            const capId = 'cap_' + cap.replace(/[\s\W]+/g, '');
+            // Generăm un ID sigur (fără spații, virgule sau diacritice care strică JS-ul)
+            const capId = 'cap_' + cap.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+            
             let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
             const subKeys = Object.keys(capsData[cap].subcaps);
-            
             subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
             
             if (subKeys.length > 0) {
@@ -839,6 +952,8 @@ function renderQ() {
         navigateTo('scr-filter');
     }
 
+
+
     function finishExam() {
         examState.isActive = false;
         clearInterval(examState.timer);
@@ -863,7 +978,6 @@ function renderQ() {
         
         let procent = Math.round((scor / state.list.length) * 100);
         
-        // PostHog Tracking pentru Examen Finalizat
         try {
             posthog.capture('examen_finalizat', { 
                 scor: scor, 
