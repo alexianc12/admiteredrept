@@ -34,10 +34,11 @@
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group reset groups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
         posthog.init('phc_wnkPhxa5oCax7Ua4EBRvjHFVvVo7M54vYTZy4fKYQKNu', {
-            api_host: 'https://eu.i.posthog.com',
-            person_profiles: 'identified_only',
-            autocapture: false
-        });
+    api_host: '/ingest', // Această setare folosește proxy-ul tău Vercel
+    ui_host: 'https://eu.posthog.com',
+    person_profiles: 'identified_only',
+    autocapture: false
+});
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -176,12 +177,15 @@
                     <div id="q-text" class="mb-8"></div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div class="mt-10 flex flex-col items-center">
-                        <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
-                        <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale">Trimite Răspunsul</button>
-                        <div id="auth-prompt" class="hidden mt-8 text-center glass-card dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-academia-gold/30 w-full max-w-md animate__animated animate__fadeInUp transition-colors duration-300">
-                            <p id="auth-prompt-msg" class="text-lg text-slate-700 dark:text-slate-200 font-bold mb-3"></p>
-                            <button class="text-academia-gold font-black text-xl md:text-2xl hover:underline bg-transparent border-none cursor-pointer" onclick="showAuthModal()">CREEAZĂ CONT &rarr;</button>
-                        </div>
+    <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
+    
+    <div id="auth-prompt" class="hidden mb-8 text-center glass-card dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-academia-gold/30 w-full max-w-md animate__animated animate__fadeInUp transition-colors duration-300">
+        <p id="auth-prompt-msg" class="text-lg text-slate-700 dark:text-slate-200 font-bold mb-3"></p>
+        <button class="text-academia-gold font-black text-xl md:text-2xl hover:underline bg-transparent border-none cursor-pointer" onclick="showAuthModal()">CREEAZĂ CONT &rarr;</button>
+    </div>
+
+    <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale">Trimite Răspunsul</button>
+</div>
                     </div>
                 </div>
             </div>
@@ -260,7 +264,7 @@
     let supabaseClient;
     let currentUser = null;        
     let db = {};
-    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 };
+    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 , qStartTime: 0};
 
     let examState = {
         isActive: false,
@@ -376,54 +380,71 @@
     }
 
     function updateProfileUI() {
-        const outDiv = document.getElementById('menu-logged-out'); const inDiv = document.getElementById('menu-logged-in');
-        if (!currentUser) { if(outDiv) outDiv.classList.remove('hidden'); if(inDiv) inDiv.classList.add('hidden'); return; }
-        
-        if(outDiv) outDiv.classList.add('hidden'); if(inDiv) inDiv.classList.remove('hidden');
-        document.getElementById('user-email-display').innerText = currentUser.email;
-        
-        const cLen = state.corecte.length; const gLen = state.gresite.length;
-        const total = cLen + gLen;
-        const acc = total > 0 ? Math.round((cLen / total) * 100) : 0;
-        
-        let subjHtml = '';
-        const matStats = { 'Limba română': 0, 'Economie': 0, 'Logică': 0 };
-        state.rawProgress.forEach(p => { if (p.status === 'corect' && matStats[p.materie] !== undefined) matStats[p.materie]++; });
-        
-        Object.entries(matStats).forEach(([subj, count]) => {
-            const subjTotal = (db[subj] && db[subj].length > 0) ? db[subj].length : 1; 
-            const perc = Math.min((count / subjTotal) * 100, 100);
-            subjHtml += `
-                <div class="mb-4">
-                    <div class="flex justify-between text-[9px] font-black uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">
-                        <span>${subj}</span><span class="text-academia-gold">${Math.round(perc)}% MASTERED</span>
-                    </div>
-                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-academia-gold h-full transition-all duration-1000" style="width: ${perc}%"></div>
-                    </div>
-                </div>`;
-        });
+    const outDiv = document.getElementById('menu-logged-out'); 
+    const inDiv = document.getElementById('menu-logged-in');
+    if (!currentUser) { if(outDiv) outDiv.classList.remove('hidden'); if(inDiv) inDiv.classList.add('hidden'); return; }
+    
+    if(outDiv) outDiv.classList.add('hidden'); if(inDiv) inDiv.classList.remove('hidden');
+    document.getElementById('user-email-display').innerText = currentUser.email;
+    
+    // Calculăm datele globale
+    const totalRezolvate = state.rawProgress.length; // Numărul total de grile din baza de date
+    const gLen = state.gresite.length;
+    
+    let subjHtml = '';
+    // REPARARE: Inițializăm matStats ca obiecte pentru a evita "undefined"
+    const matStats = { 
+        'Limba română': { count: 0, time: 0 }, 
+        'Economie': { count: 0, time: 0 }, 
+        'Logică': { count: 0, time: 0 } 
+    };
 
-        const statsCont = document.getElementById('user-stats-container');
-        if(statsCont) {
-            statsCont.innerHTML = `
-                <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
-                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
-                    <div class="grid grid-cols-2 gap-3 mb-6">
-                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Rată Precizie</p>
-                            <p class="text-3xl font-black text-academia-navy dark:text-white">${acc}%</p>
-                        </div>
-                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
-                            <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
-                            <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
-                    ${subjHtml}
-                </div>`;
+    state.rawProgress.forEach(p => { 
+        if (matStats[p.materie]) {
+            matStats[p.materie].count++; 
+            matStats[p.materie].time += (p.durata_secunde || 0); // Presupunem că stochezi durata
         }
+    });
+    
+    Object.entries(matStats).forEach(([subj, data]) => {
+        const avgTime = data.count > 0 ? Math.round(data.time / data.count) : 0;
+        const timeColor = avgTime < 45 ? 'text-emerald-500' : (avgTime < 90 ? 'text-academia-gold' : 'text-rose-500');
+
+        subjHtml += `
+            <div class="mb-5 p-3 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-colors duration-300">
+                <div class="flex justify-between items-end mb-2">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${subj}</p>
+                        <p class="text-sm font-black dark:text-white">${data.count} <span class="text-[10px] text-slate-400 font-bold uppercase">rezolvate</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Timp Mediu</p>
+                        <p class="text-sm font-black ${timeColor}">${avgTime}s <span class="text-[10px] text-slate-400">/ grilă</span></p>
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    const statsCont = document.getElementById('user-stats-container');
+    if(statsCont) {
+        statsCont.innerHTML = `
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total Grile</p>
+                        <p class="text-3xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
+                        <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
+                ${subjHtml}
+            </div>`;
     }
+}
 
     async function checkSession() {
         try {
@@ -643,6 +664,7 @@
 
 
 function renderQ() {
+state.qStartTime = Date.now();
         state.step = 'select';
         document.getElementById('auth-prompt').classList.add('hidden');
         const q = state.list[state.idx];
@@ -747,7 +769,8 @@ function renderQ() {
         if (isCorrect) {
             state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
             state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
-            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect');
+            const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, isCorrect ? 'corect' : 'gresit', duration);
             
             try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
             
