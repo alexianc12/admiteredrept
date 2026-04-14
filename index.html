@@ -839,8 +839,8 @@ function processRawData(data) {
             if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
                 sub = "Enunțul, propoziția și fraza";
             }
-            // În interiorul funcției processRawData, după logica pentru "Enunțul..."
-            if (subL === "pronumele" || subL.includes("pronumele si adjectiv pronominal") || subL.includes("pronume și adjectiv pronominal")) {
+            // Unificare Pronumele și adjectivul pronominal
+            if (subL === "pronume" || subL === "pronumele" || subL.includes("pronume si adjectiv") || subL.includes("pronume și adjectiv")) {
                 sub = "Pronumele și adjectivul pronominal";
             }
             // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
