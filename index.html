@@ -840,7 +840,7 @@ function processRawData(data) {
                 sub = "Enunțul, propoziția și fraza";
             }
             // În interiorul funcției processRawData, după logica pentru "Enunțul..."
-            if (subL === "pronume" || subL.includes("pronume si adjectiv pronominal") || subL.includes("pronume și adjectiv pronominal")) {
+            if (subL === "pronumele" || subL.includes("pronumele si adjectiv pronominal") || subL.includes("pronume și adjectiv pronominal")) {
                 sub = "Pronumele și adjectivul pronominal";
             }
             // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
