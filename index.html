@@ -236,21 +236,55 @@
         const Utils = {
             processRawData(data) {
                 return data.reduce((acc, item) => {
-                    let m = String(item.materie || item.MATERIE || item.Materie).trim();
-                    if (!m) return acc;
-                    if (m.toLowerCase().includes('română')) m = 'Limba română'; else if (m.toLowerCase().includes('economie')) m = 'Economie'; else if (m.toLowerCase().includes('logic')) m = 'Logică';
-                    
-                    let cap = String(item.capitol || "").trim(); let sub = String(item.subcapitol || item.sub || "").trim();
-                    if(cap.toLowerCase().includes("gramatică")) cap = "Gramatică";
-                    if(cap.toLowerCase().includes("ortografie")) cap = "Ortografie, ortoepie și punctuație";
-                    
-                    item.capitol = cap ? cap.charAt(0).toUpperCase() + cap.slice(1) : "General";
-                    item.subcapitol = sub && sub.toLowerCase() !== cap.toLowerCase() ? sub.charAt(0).toUpperCase() + sub.slice(1) : "General";
-                    item.computedMaterie = m;
-                    item.var_a = item.var_a || item.a; item.var_b = item.var_b || item.b; item.var_c = item.var_c || item.c; item.var_d = item.var_d || item.d;
+            const materie = item.materie || item.MATERIE || item.Materie;
+            const enunt = item.enunt || item.ENUNT || item.Enunt;
+            if (!materie || !enunt || String(enunt).trim() === "") return acc;
+            
+            let rawM = String(materie).trim();
+            let m = rawM;
+            const lowerM = rawM.toLowerCase();
+            let isEcoLog = false;
+            
+            if (lowerM.includes('română')) m = 'Limba română';
+            else if (lowerM.includes('economie')) { m = 'Economie'; isEcoLog = true; }
+            else if (lowerM.includes('gândire') || lowerM.includes('logic')) { m = 'Logică'; isEcoLog = true; }
 
-                    if (!acc[m]) acc[m] = []; acc[m].push(item); return acc;
-                }, {});
+            let cap = String(item.capitol || item.CAPITOL || item.Capitol || "").trim();
+            let sub = String(item.subcapitol || item.SUBCAPITOL || item.Subcapitol || item.sub || "").trim();
+
+            let capL = cap.toLowerCase();
+            let subL = sub.toLowerCase();
+
+            // UNIFICARE CAPITOL
+            if (capL.includes("gramatică") || capL.includes("gramatica")) cap = "Gramatică";
+            if (capL.includes("ortografie") || capL.includes("ortoepie") || capL.includes("lexico-semantice")) {
+                cap = "Ortografie, ortoepie și punctuație";
+            }
+            
+            // UNIFICARE SUBCAPITOL (Păstrăm detaliile, dar unificăm variantele de sintaxă)
+            if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
+                sub = "Enunțul, propoziția și fraza";
+            }
+            
+            // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
+            if (sub.toLowerCase().trim() === cap.toLowerCase().trim()) {
+                sub = "General";
+            }
+
+            item.capitol = formatString(cap, false);
+            item.subcapitol = formatString(sub, isEcoLog);
+            item.computedMaterie = m;
+
+            item.var_a = item.var_a || item.VAR_A || item.a;
+            item.var_b = item.var_b || item.VAR_B || item.b;
+            item.var_c = item.var_c || item.VAR_C || item.c;
+            item.var_d = item.var_d || item.VAR_D || item.d;
+            item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns;
+
+            if (!acc[m]) acc[m] = [];
+            acc[m].push(item);
+            return acc;
+        }, {});
             },
             parseTextPremium(txt) {
                 if(!txt) return "";
