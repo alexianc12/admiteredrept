@@ -459,18 +459,57 @@
         };
 
         async function boot() {
-            if(!window.supabase) return setTimeout(boot, 100);
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            UI.applyTheme();
-            const cache = localStorage.getItem('grile_db_premium');
-            if (cache) { db = JSON.parse(cache); document.getElementById('scr-loading').classList.add('hidden'); Router.init(); }
-            await Auth.checkSession();
-            fetch(API_URL).then(r => r.json()).then(data => {
-                db = Utils.processRawData(data);
-                localStorage.setItem('grile_db_premium', JSON.stringify(db));
-                if (!cache) { document.getElementById('scr-loading').classList.add('hidden'); Router.init(); }
-            });
+    if(!window.supabase) return setTimeout(boot, 100);
+    
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    UI.applyTheme();
+
+    const cache = localStorage.getItem('grile_db_premium');
+    
+    // Dacă avem cache, încărcăm instant pentru performanță
+    if (cache) { 
+        try {
+            db = JSON.parse(cache); 
+            document.getElementById('scr-loading').classList.add('hidden'); 
+            Router.init(); 
+        } catch(e) {
+            localStorage.removeItem('grile_db_premium'); // Cache corupt
         }
+    }
+
+    await Auth.checkSession();
+
+    // Implementare Fetch cu Timeout de 10 secunde
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    fetch(API_URL, { signal: controller.signal })
+        .then(r => {
+            clearTimeout(timeoutId);
+            if (!r.ok) throw new Error("Serverul de date nu răspunde (HTTP " + r.status + ")");
+            return r.json();
+        })
+        .then(data => {
+            db = Utils.processRawData(data);
+            localStorage.setItem('grile_db_premium', JSON.stringify(db));
+            
+            // Dacă nu am avut cache, abia acum afișăm interfața
+            if (!cache) { 
+                document.getElementById('scr-loading').classList.add('hidden'); 
+                Router.init(); 
+            }
+        })
+        .catch(err => {
+            console.error("Eroare Critică Boot:", err);
+            // Dacă nu avem date deloc (nici în cache), trebuie să afișăm eroarea
+            if (!cache) {
+                document.getElementById('scr-loading').classList.add('hidden');
+                document.getElementById('error-details').innerText = "Nu am putut descărca grilele. Verifică conexiunea la internet sau cota Google Script.";
+                const errorView = document.getElementById('scr-error');
+                if(errorView) errorView.classList.remove('hidden');
+            }
+        });
+}
 
         window.addEventListener('DOMContentLoaded', boot);
     </script>
