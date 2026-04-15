@@ -872,7 +872,8 @@ function processRawData(data) {
     }
 
 
-    async function init() {
+    async function init() 
+{
         try {
             if(!window.supabase) {
                 setTimeout(init, 100); 
@@ -932,7 +933,7 @@ function processRawData(data) {
     updateLobbyUI();
     }
 
-    function openFilter(m) {
+           function openFilter(m) {
         state.currentSubject = m; 
         document.getElementById('filter-title').innerText = m;
         const capsData = {};
@@ -940,54 +941,48 @@ function processRawData(data) {
         db[m].forEach(q => {
             const c = q.capitol || "General - Mix";
             const sc = q.subcapitol || "General";
-            if (!capsData[c]) capsData[c] = { subcaps: {} };
-            if (sc !== "General") {
-                if (!capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = 1;
-            }
+            // Folosim Set() pentru deduplicare automată nativă
+            if (!capsData[c]) capsData[c] = { subcaps: new Set() };
+            if (sc !== "General") capsData[c].subcaps.add(sc);
         });
         
-        let sortedCaps = Object.keys(capsData);
-        sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
-
+        let sortedCaps = Object.keys(capsData).sort((a, b) => a.localeCompare(b, 'ro'));
         const cont = document.getElementById('filter-list'); 
         cont.innerHTML = "";
 
         sortedCaps.forEach(cap => {
-            // Generăm un ID sigur (fără spații, virgule sau diacritice care strică JS-ul)
             const capId = 'cap_' + cap.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
-            
-            let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
-            const subKeys = Object.keys(capsData[cap].subcaps);
-            subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
-            
-            if (subKeys.length > 0) {
-                html += `
-                    <div class="flex items-center p-5 cursor-pointer select-none" onclick="toggleAccordion('${capId}')">
-                        <input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}" onchange="event.stopPropagation(); toggleSubcaps('${capId}', this.checked)">
-                        <span class="font-bold text-lg text-academia-navy dark:text-white flex-1">${cap}</span>
+            const subArr = Array.from(capsData[cap].subcaps).sort((a, b) => a.localeCompare(b, 'ro'));
+
+            let html = `
+                <div class="mb-4">
+                    <div class="glass-card dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] p-5 flex items-center justify-between cursor-pointer hover:border-academia-gold transition-all active-scale shadow-sm" onclick="toggleAccordion('${capId}')">
+                        <label class="flex items-center gap-4 cursor-pointer" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold cursor-pointer" value="${cap}" onchange="toggleSubcaps('${capId}', this.checked)" checked>
+                            <span class="font-black text-xl text-academia-navy dark:text-white uppercase tracking-tight">${cap}</span>
+                        </label>
                         <span id="${capId}_arrow" class="arrow-rotate text-academia-gold font-bold text-xl px-2">&#9662;</span>
                     </div>
-                    <div id="${capId}_wrap" class="accordion-content">
-                        <div class="bg-white dark:bg-slate-900 transition-colors duration-300">
-                            <div class="pl-14 pr-5 pb-5 space-y-4 border-t border-slate-200 dark:border-slate-700 pt-4">
-                                ${subKeys.map(sub => `
-                                    <label class="flex items-center gap-3 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer active:opacity-70 transition-opacity text-base">
-                                        <input type="checkbox" class="sub-cb w-5 h-5 accent-academia-gold" value="${sub}"> <span class="leading-tight">${sub}</span>
-                                    </label>
-                                `).join('')}
-                            </div>
+                    
+                    <div id="${capId}_wrap" class="accordion-content accordion-open">
+                        <div class="pt-4 pl-6 flex flex-col gap-3">
+                            ${subArr.map(sub => `
+                                <label class="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 border border-transparent hover:border-academia-gold rounded-2xl cursor-pointer transition-all shadow-sm active-scale">
+                                    <input type="checkbox" class="sub-cb w-5 h-5 accent-academia-gold cursor-pointer" value="${sub}" checked>
+                                    <span class="font-bold text-slate-700 dark:text-slate-200">${sub}</span>
+                                </label>
+                            `).join('')}
                         </div>
-                    </div>`;
-            } else {
-                html += `<label class="flex items-center p-5 cursor-pointer"><input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}"><span class="font-bold text-lg dark:text-white">${cap}</span></label>`;
-            }
-            html += `</div>`;
+                    </div>
+                </div>`;
             cont.innerHTML += html;
         });
-        // Generăm un slug prietenos cu SEO (ex: "Limba română" -> "/limba-romana")
-    const slug = '/' + m.toLowerCase().replace(/ /g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    navigateTo('scr-filter', slug);
+
+        // Mentinerea logicii de Routing SPA
+        const slug = '/' + m.toLowerCase().replace(/ /g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        navigateTo('scr-filter', slug);
     }
+    
 
 
 
