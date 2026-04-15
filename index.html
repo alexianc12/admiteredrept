@@ -349,15 +349,10 @@
         document.documentElement.classList.add('dark');
     }
 
-    function navigateTo(id, path = null) {
+    function navigateTo(id) {
         ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(id);
         if(target) { target.classList.remove('hidden'); target.classList.add('animate__fadeIn'); }
-
-        // Sistem de Routing: Schimbă URL-ul vizual în browser
-        if (path && window.location.pathname !== path) {
-            window.history.pushState({ screenId: id, path: path }, '', path);
-        }
     }
 
     document.addEventListener('click', (e) => {
@@ -433,33 +428,31 @@
     const statsCont = document.getElementById('user-stats-container');
     if(statsCont) {
         statsCont.innerHTML = `
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-		    [60vh] overflow-y-auto custom-scroll">
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700     		    shadow-sm flex flex-col justify-center transition-colors">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total     				Grile</p>
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total Grile</p>
                         <p class="text-3xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 		    shadow-sm flex flex-col justify-center transition-colors">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
                         <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
                         <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii 		        Bazei</p>
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
                 ${subjHtml}
             </div>`;
     }
 }
 
-    async function checkSession() 
-    {
-        try 
-	{
+    async function checkSession() {
+        try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user || null;
-            if (currentUser) 
-	    {
+            if (currentUser) {
                 try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
+                
                 const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
                 updateStreak(); 
                 
@@ -628,8 +621,7 @@
         if(container) container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
     }
 
-    function startFilteredQuiz(mode) 
-    {
+    function startFilteredQuiz(mode) {
         state.currentMode = mode;
         let pool = [];
         if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') {
@@ -667,9 +659,7 @@
             posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); 
         } catch(e){}
         
-        // Când începe testul, îl mutăm pe ruta de rezolvare
-   	navigateTo('scr-quiz', '/rezolvare-grile'); 
-   	renderQ();
+        navigateTo('scr-quiz'); renderQ();
     }
 
 
@@ -872,8 +862,7 @@ function processRawData(data) {
     }
 
 
-    async function init() 
-{
+    async function init() {
         try {
             if(!window.supabase) {
                 setTimeout(init, 100); 
@@ -884,7 +873,7 @@ function processRawData(data) {
             const cachedData = localStorage.getItem('grile_db_premium');
             if (cachedData) {
                 db = JSON.parse(cachedData);
-                handleInitialRoute();
+                renderLobby();
                 document.getElementById('scr-loading').classList.add('hidden'); 
             } else {
                 document.getElementById('scr-loading').classList.remove('hidden');
@@ -903,7 +892,7 @@ function processRawData(data) {
                     
                     if (!cachedData) {
                         db = freshDb;
-                        handleInitialRoute();
+                        renderLobby();
                         document.getElementById('scr-loading').classList.add('hidden');
                     }
                 })
@@ -928,12 +917,10 @@ function processRawData(data) {
             d.innerHTML = `<span class="dark:text-white">${m}</span> <span class="text-academia-gold group-hover:translate-x-2 transition-transform">&rarr;</span>`;
             list.appendChild(d);
         });
-        
-    navigateTo('scr-lobby', '/'); 
-    updateLobbyUI();
+        navigateTo('scr-lobby'); updateLobbyUI();
     }
 
-           function openFilter(m) {
+    function openFilter(m) {
         state.currentSubject = m; 
         document.getElementById('filter-title').innerText = m;
         const capsData = {};
@@ -941,48 +928,52 @@ function processRawData(data) {
         db[m].forEach(q => {
             const c = q.capitol || "General - Mix";
             const sc = q.subcapitol || "General";
-            // Folosim Set() pentru deduplicare automată nativă
-            if (!capsData[c]) capsData[c] = { subcaps: new Set() };
-            if (sc !== "General") capsData[c].subcaps.add(sc);
+            if (!capsData[c]) capsData[c] = { subcaps: {} };
+            if (sc !== "General") {
+                if (!capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = 1;
+            }
         });
         
-        let sortedCaps = Object.keys(capsData).sort((a, b) => a.localeCompare(b, 'ro'));
+        let sortedCaps = Object.keys(capsData);
+        sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
+
         const cont = document.getElementById('filter-list'); 
         cont.innerHTML = "";
 
         sortedCaps.forEach(cap => {
+            // Generăm un ID sigur (fără spații, virgule sau diacritice care strică JS-ul)
             const capId = 'cap_' + cap.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
-            const subArr = Array.from(capsData[cap].subcaps).sort((a, b) => a.localeCompare(b, 'ro'));
-
-            let html = `
-                <div class="mb-4">
-                    <div class="glass-card dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] p-5 flex items-center justify-between cursor-pointer hover:border-academia-gold transition-all active-scale shadow-sm" onclick="toggleAccordion('${capId}')">
-                        <label class="flex items-center gap-4 cursor-pointer" onclick="event.stopPropagation()">
-                            <input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold cursor-pointer" value="${cap}" onchange="toggleSubcaps('${capId}', this.checked)" checked>
-                            <span class="font-black text-xl text-academia-navy dark:text-white uppercase tracking-tight">${cap}</span>
-                        </label>
+            
+            let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
+            const subKeys = Object.keys(capsData[cap].subcaps);
+            subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
+            
+            if (subKeys.length > 0) {
+                html += `
+                    <div class="flex items-center p-5 cursor-pointer select-none" onclick="toggleAccordion('${capId}')">
+                        <input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}" onchange="event.stopPropagation(); toggleSubcaps('${capId}', this.checked)">
+                        <span class="font-bold text-lg text-academia-navy dark:text-white flex-1">${cap}</span>
                         <span id="${capId}_arrow" class="arrow-rotate text-academia-gold font-bold text-xl px-2">&#9662;</span>
                     </div>
-                    
-                    <div id="${capId}_wrap" class="accordion-content accordion-open">
-                        <div class="pt-4 pl-6 flex flex-col gap-3">
-                            ${subArr.map(sub => `
-                                <label class="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 border border-transparent hover:border-academia-gold rounded-2xl cursor-pointer transition-all shadow-sm active-scale">
-                                    <input type="checkbox" class="sub-cb w-5 h-5 accent-academia-gold cursor-pointer" value="${sub}" checked>
-                                    <span class="font-bold text-slate-700 dark:text-slate-200">${sub}</span>
-                                </label>
-                            `).join('')}
+                    <div id="${capId}_wrap" class="accordion-content">
+                        <div class="bg-white dark:bg-slate-900 transition-colors duration-300">
+                            <div class="pl-14 pr-5 pb-5 space-y-4 border-t border-slate-200 dark:border-slate-700 pt-4">
+                                ${subKeys.map(sub => `
+                                    <label class="flex items-center gap-3 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer active:opacity-70 transition-opacity text-base">
+                                        <input type="checkbox" class="sub-cb w-5 h-5 accent-academia-gold" value="${sub}"> <span class="leading-tight">${sub}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
+            } else {
+                html += `<label class="flex items-center p-5 cursor-pointer"><input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}"><span class="font-bold text-lg dark:text-white">${cap}</span></label>`;
+            }
+            html += `</div>`;
             cont.innerHTML += html;
         });
-
-        // Mentinerea logicii de Routing SPA
-        const slug = '/' + m.toLowerCase().replace(/ /g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        navigateTo('scr-filter', slug);
+        navigateTo('scr-filter');
     }
-    
 
 
 
@@ -1039,27 +1030,7 @@ function processRawData(data) {
     }
 
     window.addEventListener('DOMContentLoaded', init);
-    // Gestionarea nativă a butoanelor Back/Forward din browser
-    window.addEventListener('popstate', (e) =>
-    { 
-        if (e.state && e.state.screenId) {
-            // Reîncărcăm ecranul precedent salvat în starea istoriei (fără a forța un nou URL)
-            navigateTo(e.state.screenId); 
-        } else {
-            navigateTo('scr-lobby', '/');
-        }
-    });
-
-    // Rutare inițială: Dacă utilizatorul intră direct pe domeniul-tau.ro/limba-romana
-    function handleInitialRoute() 
-    {
-        const path = window.location.pathname;
-        if (path.includes('romana') && db['Limba română']) openFilter('Limba română');
-        else if (path.includes('economie') && db['Economie']) openFilter('Economie');
-        else if (path.includes('logica') && db['Logică']) openFilter('Logică');
-        else if (path.includes('rezolvare')) navigateTo('scr-lobby', '/'); // Resetăm la lobby pentru a nu bloca fluxul
-        else { navigateTo('scr-lobby', '/'); updateLobbyUI(); }
-    }
+    window.addEventListener('popstate', (e) => { navigateTo('scr-lobby'); });
     function goBack() { navigateTo('scr-lobby'); }
 </script>
 </body>
