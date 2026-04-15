@@ -134,11 +134,11 @@
                     <h1 class="text-3xl md:text-4xl font-black text-academia-navy dark:text-white mb-4 transition-colors duration-300">Rezolvă grile pentru admitere</h1>
                 </div>
                 <button id="btn-global-mix" onclick="startFilteredQuiz('GLOBAL_RANDOM')" class="w-full mb-4 py-5 bg-academia-navy text-academia-gold rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm">
-                    MIX TOATE MATERIILE (Random)
+                    MIX TOATE GRILELE (random)
                 </button>
                 <button onclick="openExamConfig()" class="w-full mb-8 py-5 bg-gradient-to-r from-academia-gold to-yellow-600 text-white rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm flex justify-center items-center gap-3">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    SIMULARE EXAMEN (Focus Mode)
+                    SIMULARE EXAMEN (focus Mode)
                 </button>
                 <div id="subject-list" class="grid gap-4 mb-6"></div>
                 <div id="btn-vault" onclick="startFilteredQuiz('ERRORS')" class="hidden mt-4 mx-auto w-max px-5 py-2 glass-card dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-slate-200 dark:border-slate-800 hover:border-rose-200 rounded-full cursor-pointer transition-all active-scale flex items-center gap-2 group shadow-sm">
@@ -150,9 +150,9 @@
             <div id="scr-filter" class="hidden max-w-3xl mx-auto mt-6">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-xl p-8 transition-colors duration-300">
                     <h2 id="filter-title" class="text-3xl font-black text-center mb-8 text-academia-navy dark:text-white"></h2>
-                    <button id="btn-start-all" onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">MOD EXCLUSIV (Random)</button>
+                    <button id="btn-start-all" onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">MIX TOATE GRILELE (Random)</button>
                     <div id="filter-list" class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scroll"></div>
-                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer hover:shadow-lg transition-all active-scale">ÎNCEPE SELECȚIA &rarr;</button>
+                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer hover:shadow-lg transition-all active-scale">ÎNCEPE REZOLVAREA &rarr;</button>
                 </div>
             </div>
 
@@ -349,10 +349,15 @@
         document.documentElement.classList.add('dark');
     }
 
-    function navigateTo(id) {
+    function navigateTo(id, path = null) {
         ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(id);
         if(target) { target.classList.remove('hidden'); target.classList.add('animate__fadeIn'); }
+
+        // Sistem de Routing: Schimbă URL-ul vizual în browser
+        if (path && window.location.pathname !== path) {
+            window.history.pushState({ screenId: id, path: path }, '', path);
+        }
     }
 
     document.addEventListener('click', (e) => {
@@ -428,31 +433,33 @@
     const statsCont = document.getElementById('user-stats-container');
     if(statsCont) {
         statsCont.innerHTML = `
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-		    [60vh] overflow-y-auto custom-scroll">
                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total Grile</p>
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700     		    shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total     				Grile</p>
                         <p class="text-3xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 		    shadow-sm flex flex-col justify-center transition-colors">
                         <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
                         <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii 		        Bazei</p>
                 ${subjHtml}
             </div>`;
     }
 }
 
-    async function checkSession() {
-        try {
+    async function checkSession() 
+    {
+        try 
+	{
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user || null;
-            if (currentUser) {
+            if (currentUser) 
+	    {
                 try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
-                
                 const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
                 updateStreak(); 
                 
@@ -621,7 +628,8 @@
         if(container) container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
     }
 
-    function startFilteredQuiz(mode) {
+    function startFilteredQuiz(mode) 
+    {
         state.currentMode = mode;
         let pool = [];
         if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') {
@@ -659,7 +667,9 @@
             posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); 
         } catch(e){}
         
-        navigateTo('scr-quiz'); renderQ();
+        // Când începe testul, îl mutăm pe ruta de rezolvare
+   	navigateTo('scr-quiz', '/rezolvare-grile'); 
+   	renderQ();
     }
 
 
@@ -795,7 +805,7 @@ if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || sta
         }
         
         state.step = 'validate'; const btn = document.getElementById('btn-action');
-        btn.innerText = "Continuă Navigarea \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
+        btn.innerText = "Continuă cu următoarea grilă \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
 
         btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } };
     }
@@ -839,10 +849,7 @@ function processRawData(data) {
             if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
                 sub = "Enunțul, propoziția și fraza";
             }
-            // Unificare Pronumele și adjectivul pronominal
-            if (subL === "pronume" || subL === "pronumele" || subL.includes("pronume si adjectiv") || subL.includes("pronume și adjectiv")) {
-                sub = "Pronumele și adjectivul pronominal";
-            }
+            
             // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
             if (sub.toLowerCase().trim() === cap.toLowerCase().trim()) {
                 sub = "General";
@@ -876,7 +883,7 @@ function processRawData(data) {
             const cachedData = localStorage.getItem('grile_db_premium');
             if (cachedData) {
                 db = JSON.parse(cachedData);
-                renderLobby();
+                handleInitialRoute();
                 document.getElementById('scr-loading').classList.add('hidden'); 
             } else {
                 document.getElementById('scr-loading').classList.remove('hidden');
@@ -895,7 +902,7 @@ function processRawData(data) {
                     
                     if (!cachedData) {
                         db = freshDb;
-                        renderLobby();
+                        handleInitialRoute();
                         document.getElementById('scr-loading').classList.add('hidden');
                     }
                 })
@@ -920,7 +927,9 @@ function processRawData(data) {
             d.innerHTML = `<span class="dark:text-white">${m}</span> <span class="text-academia-gold group-hover:translate-x-2 transition-transform">&rarr;</span>`;
             list.appendChild(d);
         });
-        navigateTo('scr-lobby'); updateLobbyUI();
+        
+    navigateTo('scr-lobby', '/'); 
+    updateLobbyUI();
     }
 
     function openFilter(m) {
@@ -975,7 +984,9 @@ function processRawData(data) {
             html += `</div>`;
             cont.innerHTML += html;
         });
-        navigateTo('scr-filter');
+        // Generăm un slug prietenos cu SEO (ex: "Limba română" -> "/limba-romana")
+    const slug = '/' + m.toLowerCase().replace(/ /g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    navigateTo('scr-filter', slug);
     }
 
 
@@ -1033,7 +1044,27 @@ function processRawData(data) {
     }
 
     window.addEventListener('DOMContentLoaded', init);
-    window.addEventListener('popstate', (e) => { navigateTo('scr-lobby'); });
+    // Gestionarea nativă a butoanelor Back/Forward din browser
+    window.addEventListener('popstate', (e) =>
+    { 
+        if (e.state && e.state.screenId) {
+            // Reîncărcăm ecranul precedent salvat în starea istoriei (fără a forța un nou URL)
+            navigateTo(e.state.screenId); 
+        } else {
+            navigateTo('scr-lobby', '/');
+        }
+    });
+
+    // Rutare inițială: Dacă utilizatorul intră direct pe domeniul-tau.ro/limba-romana
+    function handleInitialRoute() 
+    {
+        const path = window.location.pathname;
+        if (path.includes('romana') && db['Limba română']) openFilter('Limba română');
+        else if (path.includes('economie') && db['Economie']) openFilter('Economie');
+        else if (path.includes('logica') && db['Logică']) openFilter('Logică');
+        else if (path.includes('rezolvare')) navigateTo('scr-lobby', '/'); // Resetăm la lobby pentru a nu bloca fluxul
+        else { navigateTo('scr-lobby', '/'); updateLobbyUI(); }
+    }
     function goBack() { navigateTo('scr-lobby'); }
 </script>
 </body>
