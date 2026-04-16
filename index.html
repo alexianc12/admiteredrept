@@ -3,8 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grile Admitere Drept UB | Română, Logică, Economie</title>
     
+    <title>Grile Admitere Drept UB | Română, Logică, Economie</title>
+    <meta name="description" content="Platformă pentru admiterea la Facultatea de Drept. Rezolvă grile la Limba Română, Logică și Economie. Mod simulare examen cu timer.">
+    <meta name="keywords" content="grile admitere drept, admitere drept ub, simulare drept bucuresti, grile economie drept, grile logica, admitere drept 2026">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://domeniul-tau.ro/">
+    <meta property="og:title" content="Grile Admitere Drept">
+    <meta property="og:description" content="Grile de examen și simulări. Mod de noapte, salvarea greșelilor și timer inclus.">
+    <meta property="og:image" content="https://grileadmiteredrept.vercel.app/"> 
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Simulator Grile Admitere Drept",
+      "url": "https://domeniul-tau.ro/",
+      "description": "Simulator online pentru examenul de admitere la Facultatea de Drept. Include grile de Limba Română, Economie și Logică.",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RON"
+      }
+    }
+    </script>
+
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group reset groups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('phc_wnkPhxa5oCax7Ua4EBRvjHFVvVo7M54vYTZy4fKYQKNu', {
+    api_host: '/ingest', // Această setare folosește proxy-ul tău Vercel
+    ui_host: 'https://eu.posthog.com',
+    person_profiles: 'identified_only',
+    autocapture: false
+});
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,7 +54,7 @@
             theme: {
                 extend: {
                     colors: { academia: { navy: '#1A2238', gold: '#C19A6B', goldL: '#FBF5E9' } },
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], serif: ['Plus Jakarta Sans', 'sans-serif'] }
                 }
             }
         }
@@ -33,6 +69,7 @@
         .rotated { transform: rotate(180deg); }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #C19A6B; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
         
         :root { --glass: rgba(255, 255, 255, 0.85); --glass-border: rgba(255, 255, 255, 0.4); }
         .dark { --glass: rgba(26, 34, 56, 0.85); --glass-border: rgba(255, 255, 255, 0.1); }
@@ -46,218 +83,974 @@
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 text-academia-navy dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
-    
     <div id="scr-loading" class="fixed inset-0 z-[200] bg-white dark:bg-slate-950 flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-slate-100 dark:border-slate-800 border-t-academia-gold rounded-full animate-spin mb-4"></div>
-        <p class="text-xs font-black uppercase tracking-widest text-slate-400">Sincronizare Bază de Date...</p>
+        <p class="text-xs font-black uppercase tracking-widest text-slate-400">Inițializare Sistem...</p>
     </div>
-
+    
     <nav id="main-nav" class="fixed top-0 w-full z-50 px-6 py-4 glass-card border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm transition-colors duration-300">
         <div class="flex items-center gap-4">
-            <button class="font-black text-xl tracking-tighter uppercase bg-transparent border-none p-0 text-academia-navy dark:text-white cursor-pointer" onclick="window.location.reload()">
+            <button class="font-black text-xl tracking-tighter uppercase bg-transparent border-none p-0 text-academia-navy dark:text-white cursor-pointer" onclick="navigateTo('scr-lobby')">
                 <span class="text-academia-gold">GRILE</span>ADMITERE<span class="text-academia-gold">DREPT</span>
             </button>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 relative">
             <div id="streak-container" class="hidden flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800 transition-all">
-                <span class="text-orange-500 text-sm">🔥</span>
-                <span id="streak-count" class="font-black text-orange-600 dark:text-orange-400 text-sm">0</span>
+                <span class="text-orange-500 text-sm leading-none">🔥</span>
+                <span id="streak-count" class="font-black text-orange-600 dark:text-orange-400 text-sm leading-none">0</span>
             </div>
-            <button onclick="toggleDarkMode()" class="text-academia-gold bg-transparent border-none cursor-pointer hover:scale-110 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg></button>
-            <button onclick="toggleProfileMenu()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:text-academia-gold transition-all border-none cursor-pointer"><svg class="w-5 h-5 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></button>
+            <button onclick="toggleDarkMode()" class="text-academia-gold bg-transparent border-none cursor-pointer hover:scale-110 transition-transform">
+                <svg id="dark-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+            <button id="btn-profile" onclick="toggleProfileMenu()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:text-academia-gold transition-all border-none cursor-pointer">
+                <svg class="w-5 h-5 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </button>
+            
+            <div id="profile-menu" class="hidden absolute right-0 top-full mt-3 w-80 glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl py-0 z-50 overflow-hidden transition-colors duration-300">
+                <div id="menu-logged-out" class="p-4">
+                    <button onclick="showAuthModal()" class="w-full py-3 bg-academia-navy text-academia-gold rounded-xl font-bold text-sm border-none cursor-pointer hover:shadow-lg transition-all">Logare / Cont Nou</button>
+                </div>
+                <div id="menu-logged-in" class="hidden flex flex-col">
+                    <div id="user-stats-container"></div>
+                    <div class="p-5 border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-800/50 rounded-b-[24px]">
+                        <p id="user-email-display" class="text-xs text-slate-400 font-bold truncate mb-3">...</p>
+                        <button onclick="handleLogout()" class="w-full py-2 text-sm text-rose-500 font-bold hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors border-none bg-transparent cursor-pointer text-left">Deconectare Sesiune</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
     <main class="pt-24 pb-8 px-4 flex justify-center">
         <div class="w-full max-w-5xl">
+            <div id="scr-error" class="hidden text-center py-20 glass-card dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded-[32px] shadow-lg max-w-2xl mx-auto transition-colors duration-300">
+                <h2 class="text-2xl font-bold text-rose-600 mb-2">Eroare Sistem</h2>
+                <p id="error-details" class="text-slate-600 dark:text-slate-300 px-8 mb-6 font-medium"></p>
+                <button onclick="window.location.reload()" class="px-8 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl font-bold text-sm border-none cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Reîncearcă</button>
+            </div>
+            
             <div id="scr-lobby" class="hidden max-w-3xl mx-auto mt-6">
                 <div class="text-center mb-10">
-                    <h1 class="text-3xl md:text-4xl font-black text-academia-navy dark:text-white mb-4">Rezolvă grile pentru admitere</h1>
+                    <h1 class="text-3xl md:text-4xl font-black text-academia-navy dark:text-white mb-4 transition-colors duration-300">Rezolvă grile pentru admitere</h1>
                 </div>
-                <button onclick="startFilteredQuiz('GLOBAL_RANDOM')" class="w-full mb-4 py-5 bg-academia-navy text-academia-gold rounded-3xl font-black text-lg active-scale border-none cursor-pointer shadow-sm">MIX TOATE MATERIILE (Random)</button>
+                <button id="btn-global-mix" onclick="startFilteredQuiz('GLOBAL_RANDOM')" class="w-full mb-4 py-5 bg-academia-navy text-academia-gold rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm">
+                    MIX TOATE GRILELE (random)
+                </button>
+                <button onclick="openExamConfig()" class="w-full mb-8 py-5 bg-gradient-to-r from-academia-gold to-yellow-600 text-white rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm flex justify-center items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    SIMULARE EXAMEN (focus Mode)
+                </button>
                 <div id="subject-list" class="grid gap-4 mb-6"></div>
+                <div id="btn-vault" onclick="startFilteredQuiz('ERRORS')" class="hidden mt-4 mx-auto w-max px-5 py-2 glass-card dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-slate-200 dark:border-slate-800 hover:border-rose-200 rounded-full cursor-pointer transition-all active-scale flex items-center gap-2 group shadow-sm">
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:text-rose-600 transition-colors">Revizuire: <span id="vault-count" class="text-academia-navy dark:text-academia-gold group-hover:text-rose-600 font-black">0</span> grile</span>
+                </div>
             </div>
 
             <div id="scr-filter" class="hidden max-w-3xl mx-auto mt-6">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-xl p-8 transition-colors duration-300">
                     <h2 id="filter-title" class="text-3xl font-black text-center mb-8 text-academia-navy dark:text-white"></h2>
-                    <div id="filter-list" class="space-y-3 mb-8 max-h-[50vh] overflow-y-auto pr-2"></div>
-                    <button onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg active-scale border-none cursor-pointer shadow-lg">ÎNCEPE REZOLVAREA &rarr;</button>
+                    <button id="btn-start-all" onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">MIX TOATE GRILELE (Random)</button>
+                    <div id="filter-list" class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scroll"></div>
+                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer hover:shadow-lg transition-all active-scale">ÎNCEPE REZOLVAREA &rarr;</button>
                 </div>
             </div>
 
             <div id="scr-quiz" class="hidden mt-2">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-2xl p-6 md:p-10 relative overflow-hidden transition-colors duration-300">
+                    
+                    <div id="exam-header" class="hidden flex-col mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <span id="exam-progress-text" class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Grila 1 din 30</span>
+                            <span id="exam-timer" class="text-lg font-black text-rose-500 font-mono tracking-wider">00:00</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                            <div id="exam-progress-bar" class="bg-academia-gold h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div id="quiz-badge-error" class="hidden absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
                     <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <span id="q-meta" class="text-[10px] font-black uppercase tracking-widest text-academia-gold">...</span>
+                        <span id="q-meta" class="text-[10px] font-black uppercase tracking-widest text-academia-gold"></span>
+                        <span id="q-mode-badge" class="hidden text-[10px] font-black uppercase tracking-widest bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full">Mod Revizuire</span>
                     </div>
                     <div id="q-text" class="mb-8"></div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div class="mt-10 flex flex-col items-center">
-                        <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
-                        <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 active-scale border-none cursor-pointer shadow-xl">Trimite Răspunsul</button>
+    <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
+    
+    <div id="auth-prompt" class="hidden mb-8 text-center glass-card dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-academia-gold/30 w-full max-w-md animate__animated animate__fadeInUp transition-colors duration-300">
+        <p id="auth-prompt-msg" class="text-lg text-slate-700 dark:text-slate-200 font-bold mb-3"></p>
+        <button class="text-academia-gold font-black text-xl md:text-2xl hover:underline bg-transparent border-none cursor-pointer" onclick="showAuthModal()">CREEAZĂ CONT &rarr;</button>
+    </div>
+
+    <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale">Trimite Răspunsul</button>
+</div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="exam-modal" class="hidden fixed inset-0 z-[90] bg-academia-navy/90 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-card dark:bg-slate-900 rounded-[40px] p-8 w-full max-w-lg relative animate__animated animate__zoomIn animate__faster border-none shadow-2xl transition-colors duration-300">
+                <button onclick="closeExamConfig()" class="absolute top-6 right-8 text-slate-300 hover:text-rose-500 text-3xl font-black border-none bg-transparent cursor-pointer">&times;</button>
+                <h2 class="text-3xl font-black text-center mb-6 dark:text-white">Setări Examen</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">1. Selectează Materiile</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer border border-transparent hover:border-academia-gold transition-colors">
+                                <input type="checkbox" class="exam-mat-cb w-5 h-5 accent-academia-gold" value="Limba română" checked> <span class="font-bold dark:text-white">Limba română</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer border border-transparent hover:border-academia-gold transition-colors">
+                                <input type="checkbox" class="exam-mat-cb w-5 h-5 accent-academia-gold" value="Economie" checked> <span class="font-bold dark:text-white">Economie</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer border border-transparent hover:border-academia-gold transition-colors">
+                                <input type="checkbox" class="exam-mat-cb w-5 h-5 accent-academia-gold" value="Logică" checked> <span class="font-bold dark:text-white">Logică</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">2. Timp (Min)</p>
+                            <select id="exam-time-sel" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white font-bold outline-none border-none cursor-pointer">
+                                <option value="15">15 Minute</option>
+                                <option value="30" selected>30 Minute</option>
+                                <option value="60">60 Minute</option>
+                                <option value="120">120 Minute</option>
+                                <option value="240">240 Minute</option>
+                            </select>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">3. Nr. Grile</p>
+                            <select id="exam-count-sel" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white font-bold outline-none border-none cursor-pointer">
+                                <option value="15">15 Grile</option>
+                                <option value="30" selected>30 Grile</option>
+                                <option value="60">60 Grile</option>
+                                <option value="100">100 Grile (Oficial)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="launchExam()" class="w-full py-5 mt-4 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer active-scale shadow-lg hover:shadow-xl transition-all">Lansează Examenul &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="auth-modal" class="hidden fixed inset-0 z-[100] bg-academia-navy/90 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-card dark:bg-slate-900 rounded-[40px] p-10 w-full max-w-md relative animate__animated animate__zoomIn animate__faster border-none shadow-2xl transition-colors duration-300">
+                <button onclick="closeAuthModal()" class="absolute top-6 right-8 text-slate-300 hover:text-rose-500 text-3xl font-black border-none bg-transparent cursor-pointer">&times;</button>
+                <h2 class="text-3xl font-black text-center mb-8 dark:text-white">Intră în cont</h2>
+                <div class="space-y-4">
+                    <input id="auth-email" type="email" placeholder="Email" class="w-full px-6 py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 dark:bg-slate-800 focus:border-academia-gold outline-none font-bold text-academia-navy dark:text-white transition-colors duration-300">
+                    <input id="auth-password" type="password" placeholder="Parolă" class="w-full px-6 py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 dark:bg-slate-800 focus:border-academia-gold outline-none font-bold text-academia-navy dark:text-white transition-colors duration-300">
+                    <div id="auth-error" class="hidden text-rose-500 text-xs font-black text-center"></div>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+    <button onclick="handleRegister()" class="py-4 bg-academia-navy text-academia-gold rounded-xl font-black hover:shadow-lg transition-all border-none cursor-pointer">Cont Nou</button>
+    <button onclick="handleLogin()" class="py-4 bg-slate-50 dark:bg-slate-800 text-academia-navy dark:text-white border-2 border-slate-100 dark:border-slate-700 rounded-xl font-black hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer">Conectare</button>
+</div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbybB7Loqhsu2RCI4clEmvpY7IVscyV_Kdr1TRzbNioSbhy3lGmcXDIRD9dWW8kHv0ei/exec";
-        let db = {};
-        let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentSubject: null, corecte: [], gresite: [] };
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbybB7Loqhsu2RCI4clEmvpY7IVscyV_Kdr1TRzbNioSbhy3lGmcXDIRD9dWW8kHv0ei/exec";
+    const SUPABASE_URL = 'https://mrxyaofzjhunmewqjwyr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeHlhb2Z6amh1bm1ld3Fqd3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODI0MDEsImV4cCI6MjA5MTE1ODQwMX0.Q8Tj7CzXP4fJxaKcMP-s7wYEevuKlvp--anr0I-j7DQ';
 
-        function toggleDarkMode() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        }
+    let supabaseClient;
+    let currentUser = null;        
+    let db = {};
+    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 , qStartTime: 0};
 
-        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
+    let examState = {
+        isActive: false,
+        timer: null,
+        timeLeftSec: 0,
+        totalTimeSec: 0,
+        userAnswers: {} 
+    };
 
-        function navigateTo(id) {
-            ['scr-loading', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => document.getElementById(s).classList.add('hidden'));
-            const target = document.getElementById(id);
-            target.classList.remove('hidden');
-            target.classList.add('animate__fadeIn');
-        }
+    function openExamConfig() { document.getElementById('exam-modal').classList.remove('hidden'); }
+    function closeExamConfig() { document.getElementById('exam-modal').classList.add('hidden'); }
 
-        function renderQ() {
-            state.step = 'select';
-            const q = state.list[state.idx];
-            document.getElementById('q-meta').innerHTML = `${q.computedMaterie} &rarr; ${q.capitol}`;
-            document.getElementById('q-text').innerHTML = `<div class="font-bold text-xl md:text-2xl leading-snug text-academia-navy dark:text-white">${q.enunt}</div>`;
+    function launchExam() {
+        const countVal = parseInt(document.getElementById('exam-count-sel').value);
+        const timeVal = parseInt(document.getElementById('exam-time-sel').value);
+        let pool = [];
+
+        if (countVal === 100) {
+            let gramatica = (db['Limba română'] || []).filter(q => q.capitol && q.capitol.toLowerCase().includes('gramatic')).sort(() => Math.random() - 0.5).slice(0, 35);
+            let ortografie = (db['Limba română'] || []).filter(q => q.capitol && (q.capitol.toLowerCase().includes('ortografie') || q.capitol.toLowerCase().includes('lexic'))).sort(() => Math.random() - 0.5).slice(0, 15);
+            let economie = (db['Economie'] || []).sort(() => Math.random() - 0.5).slice(0, 30);
+            let logica = (db['Logică'] || []).sort(() => Math.random() - 0.5).slice(0, 20); 
             
-            const btn = document.getElementById('btn-action');
-            btn.disabled = true; btn.innerText = "Trimite Răspunsul"; btn.onclick = submitAnswer;
-            btn.className = "w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 active-scale border-none cursor-pointer shadow-xl";
-
-            const cont = document.getElementById('q-options'); cont.innerHTML = "";
-            ['var_a', 'var_b', 'var_c', 'var_d'].forEach(k => {
-                if (!q[k]) return;
-                const letter = k.split('_')[1].toUpperCase();
-                const opt = document.createElement('div');
-                // Structural: menținem border-2 pentru chenar constant
-                opt.className = "opt-card p-5 glass-card dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer font-bold flex gap-4 items-center active-scale transition-all shadow-sm";
-                opt.innerHTML = `<span class="w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-sm font-black flex-shrink-0">${letter}</span><span class="text-lg leading-snug">${q[k]}</span>`;
-                opt.onclick = () => {
-                    if(state.step !== 'select') return;
-                    document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('border-academia-gold', 'bg-academia-goldL', 'dark:bg-slate-900'));
-                    opt.classList.add('border-academia-gold', 'bg-academia-goldL', 'dark:bg-slate-900');
-                    state.selectedVal = letter; state.selectedEl = opt; btn.disabled = false;
-                };
-                cont.appendChild(opt);
-            });
+            pool = [...gramatica, ...ortografie, ...economie, ...logica];
+        } else {
+            const selMats = Array.from(document.querySelectorAll('.exam-mat-cb:checked')).map(cb => cb.value);
+            let tempPool = [];
+            selMats.forEach(m => { tempPool.push(...(db[m] || []).sort(() => Math.random() - 0.5)); });
+            pool = tempPool.sort(() => Math.random() - 0.5).slice(0, countVal);
         }
 
-        function submitAnswer() {
-            if (state.step !== 'select') return;
-            const q = state.list[state.idx];
-            const cor = (q.raspuns_corect || "").trim().toUpperCase();
-            const corIdx = ['A','B','C','D'].indexOf(cor); 
-            const allCards = document.querySelectorAll('.opt-card');
-            const corEl = corIdx >= 0 ? allCards[corIdx] : null;
+        if (pool.length === 0) { alert("Nu există grile suficiente în baza de date pentru selecția făcută!"); return; }
+        
+        state.currentMode = 'EXAM';
+        state.list = pool.sort(() => Math.random() - 0.5); 
+        state.idx = 0;
+        
+        examState.isActive = true;
+        examState.totalTimeSec = timeVal * 60;
+        examState.timeLeftSec = timeVal * 60;
+        examState.userAnswers = {};
+        
+        closeExamConfig();
+        
+        document.getElementById('main-nav').classList.add('hidden');
+        document.getElementById('exam-header').classList.remove('hidden');
+        document.getElementById('exam-header').classList.add('flex');
+        
+        startTimer();
+        navigateTo('scr-quiz');
+        renderQ();
+    }
+
+    function startTimer() {
+        clearInterval(examState.timer);
+        examState.timer = setInterval(() => {
+            if(!examState.isActive) { clearInterval(examState.timer); return; }
             
-            allCards.forEach(c => c.classList.add('opacity-30'));
-            const isCorrect = state.selectedVal === cor;
+            examState.timeLeftSec--;
+            let h = Math.floor(examState.timeLeftSec / 3600);
+            let m = Math.floor((examState.timeLeftSec % 3600) / 60);
+            let s = examState.timeLeftSec % 60;
             
-            // LOGICA REPARATĂ: Nu eliminăm border-ul structural, schimbăm doar culorile de stare
-            if (state.selectedEl) {
-                state.selectedEl.classList.remove('opacity-30', 'border-slate-200', 'border-academia-gold', 'dark:border-slate-700', 'bg-white', 'bg-academia-goldL', 'dark:bg-slate-800', 'dark:bg-slate-900');
-                state.selectedEl.classList.add('text-white', isCorrect ? 'bg-emerald-500' : 'bg-rose-500', isCorrect ? 'border-emerald-500' : 'border-rose-500');
-                state.selectedEl.querySelectorAll('span').forEach(s => {
-                    s.classList.remove('border-slate-200', 'dark:border-slate-600');
-                    s.classList.add('text-white', 'border-white');
-                });
+            let timeStr = h > 0 ? 
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : 
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+            document.getElementById('exam-timer').innerText = timeStr;
+            
+            if (examState.timeLeftSec < 300) document.getElementById('exam-timer').classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
+            
+            if(examState.timeLeftSec <= 0) { clearInterval(examState.timer); finishExam(); }
+        }, 1000);
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+
+    function navigateTo(id) {
+        ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); });
+        const target = document.getElementById(id);
+        if(target) { target.classList.remove('hidden'); target.classList.add('animate__fadeIn'); }
+    }
+
+    document.addEventListener('click', (e) => {
+        const btn = document.getElementById('btn-profile'); const menu = document.getElementById('profile-menu');
+        if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add('hidden');
+    });
+
+    function toggleProfileMenu() {
+        const menu = document.getElementById('profile-menu'); menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) updateProfileUI();
+    }
+
+    function showAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
+    function updateLobbyUI() {
+        const vaultBtn = document.getElementById('btn-vault');
+        if (!vaultBtn) return;
+        if (state.gresite.length > 0) {
+            vaultBtn.classList.remove('hidden');
+            document.getElementById('vault-count').innerText = state.gresite.length;
+        } else {
+            vaultBtn.classList.add('hidden');
+        }
+    }
+
+    function updateProfileUI() {
+    const outDiv = document.getElementById('menu-logged-out'); 
+    const inDiv = document.getElementById('menu-logged-in');
+    if (!currentUser) { if(outDiv) outDiv.classList.remove('hidden'); if(inDiv) inDiv.classList.add('hidden'); return; }
+    
+    if(outDiv) outDiv.classList.add('hidden'); if(inDiv) inDiv.classList.remove('hidden');
+    document.getElementById('user-email-display').innerText = currentUser.email;
+    
+    // Calculăm datele globale
+    const totalRezolvate = state.rawProgress.length; // Numărul total de grile din baza de date
+    const gLen = state.gresite.length;
+    
+    let subjHtml = '';
+    // REPARARE: Inițializăm matStats ca obiecte pentru a evita "undefined"
+    const matStats = { 
+        'Limba română': { count: 0, time: 0 }, 
+        'Economie': { count: 0, time: 0 }, 
+        'Logică': { count: 0, time: 0 } 
+    };
+
+    state.rawProgress.forEach(p => { 
+        if (matStats[p.materie]) {
+            matStats[p.materie].count++; 
+            matStats[p.materie].time += (p.durata_secunde || 0); // Presupunem că stochezi durata
+        }
+    });
+    
+    Object.entries(matStats).forEach(([subj, data]) => {
+        const avgTime = data.count > 0 ? Math.round(data.time / data.count) : 0;
+        const timeColor = avgTime < 45 ? 'text-emerald-500' : (avgTime < 90 ? 'text-academia-gold' : 'text-rose-500');
+
+        subjHtml += `
+            <div class="mb-5 p-3 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-colors duration-300">
+                <div class="flex justify-between items-end mb-2">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${subj}</p>
+                        <p class="text-sm font-black dark:text-white">${data.count} <span class="text-[10px] text-slate-400 font-bold uppercase">rezolvate</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Timp Mediu</p>
+                        <p class="text-sm font-black ${timeColor}">${avgTime}s <span class="text-[10px] text-slate-400">/ grilă</span></p>
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    const statsCont = document.getElementById('user-stats-container');
+    if(statsCont) {
+        statsCont.innerHTML = `
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total Grile</p>
+                        <p class="text-3xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
+                        <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
+                ${subjHtml}
+            </div>`;
+    }
+}
+
+    async function checkSession() {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            currentUser = session?.user || null;
+            if (currentUser) {
+                try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
+                
+                const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie').eq('user_id', currentUser.id);
+                updateStreak(); 
+                
+                const { data } = await progressPromise;
+                if (data) {
+                    state.rawProgress = data;
+                    state.corecte = data.filter(d => d.status === 'corect').map(d => String(d.grila_id));
+                    state.gresite = data.filter(d => d.status === 'gresit').map(d => String(d.grila_id));
+                }
+                
+                document.getElementById('auth-prompt')?.classList.add('hidden');
+            }
+            updateProfileUI(); updateLobbyUI();
+        } catch(e) { console.error("Eroare sesiune:", e); }
+    }
+
+    async function updateStreak() {
+        // Dacă nu e logat, ascundem focul
+        if (!currentUser) {
+            document.getElementById('streak-container').classList.add('hidden');
+            return;
+        }
+        
+        // FORȚĂM AFIȘAREA IMEDIATĂ LA LOGARE (cu valoarea 0 sau ce e în memorie)
+        document.getElementById('streak-container').classList.remove('hidden');
+        document.getElementById('streak-count').innerText = state.streak || 0;
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        try {
+            let { data, error } = await supabaseClient
+                .from('user_profiles')
+                .select('last_active_date, current_streak')
+                .eq('user_id', currentUser.id)
+                .single();
+
+            if (error && error.code === 'PGRST116') {
+                 const { data: newData } = await supabaseClient
+                    .from('user_profiles')
+                    .insert([{ user_id: currentUser.id, last_active_date: today, current_streak: 1 }])
+                    .select()
+                    .single();
+                 data = newData;
             }
 
-            if (!isCorrect && corEl) {
-                corEl.classList.remove('opacity-30', 'border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800', 'dark:bg-slate-900');
-                corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-                corEl.querySelectorAll('span').forEach(s => {
-                    s.classList.remove('border-slate-200', 'dark:border-slate-600');
-                    s.classList.add('text-white', 'border-white');
-                });
-            }
+            if (data) {
+                let newStreak = data.current_streak;
+                const lastDate = data.last_active_date;
 
-            state.step = 'validate'; 
-            const btn = document.getElementById('btn-action');
-            btn.innerText = "Următoarea Grilă \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
-            btn.onclick = () => { 
-                state.idx++; 
-                if (state.idx < state.list.length) renderQ(); 
-                else window.location.reload(); 
+                if (lastDate !== today) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                    if (lastDate === yesterdayStr) {
+                        newStreak++;
+                    } else {
+                        newStreak = 1; 
+                    }
+                    
+                    await supabaseClient.from('user_profiles').update({
+                        last_active_date: today,
+                        current_streak: newStreak
+                    }).eq('user_id', currentUser.id);
+                }
+                
+                // ACTUALIZĂM UI-ul CU VALOAREA REALĂ DIN BAZA DE DATE
+                state.streak = newStreak;
+                document.getElementById('streak-count').innerText = newStreak;
+            }
+        } catch (e) {
+            console.log("Conexiunea la tabela de streak nu este încă activă.");
+        }
+    }
+    async function saveProgressToCloud(grilaId, materie, statusStr) {
+        if (!currentUser) return;
+        const idStr = String(grilaId);
+        if (statusStr === 'corect' && state.corecte.includes(idStr)) return;
+        
+        const { error } = await supabaseClient
+            .from('user_progress')
+            .upsert({ user_id: currentUser.id, grila_id: idStr, materie: materie, status: statusStr }, { onConflict: 'user_id, grila_id' });
+            
+        if (!error) {
+            if (statusStr === 'corect') {
+                if (!state.corecte.includes(idStr)) state.corecte.push(idStr);
+                state.gresite = state.gresite.filter(id => id !== idStr);
+            } else {
+                if (!state.gresite.includes(idStr)) state.gresite.push(idStr);
+            }
+            const target = state.rawProgress.find(p => p.grila_id === idStr);
+            if (target) target.status = statusStr; else state.rawProgress.push({ grila_id: idStr, status: statusStr, materie: materie });
+            updateProfileUI(); updateLobbyUI();
+        }
+    }
+
+    async function handleRegister() {
+        const e = document.getElementById('auth-email').value; 
+        const p = document.getElementById('auth-password').value;
+        const errEl = document.getElementById('auth-error');
+        
+        // 1. Validare activă înainte de a consuma resurse pe server
+        if (!e) {
+            errEl.innerText = "Te rugăm să introduci un email valid.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (p.length < 6) {
+            errEl.innerText = "Parola trebuie să aibă minim 6 caractere.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        // 2. Apelul către Supabase
+        const { error } = await supabaseClient.auth.signUp({ email: e, password: p });
+        
+        if (error) { 
+            // Traducem erorile tehnice în mesaje umane
+            errEl.innerText = error.message === "User already registered" ? "Acest email are deja cont. Folosește butonul Conectare." : error.message; 
+            errEl.classList.remove('hidden'); 
+        } 
+        else { 
+            try { posthog.capture('register_success'); } catch(err){}
+            closeAuthModal(); window.location.reload(); 
+        }
+    }
+
+    async function handleLogin() {
+        const e = document.getElementById('auth-email').value; 
+        const p = document.getElementById('auth-password').value;
+        const errEl = document.getElementById('auth-error');
+
+        if (!e || !p) {
+            errEl.innerText = "Te rugăm să completezi ambele câmpuri.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        const { error, data } = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
+        
+        if (error) { 
+            errEl.innerText = error.message === "Invalid login credentials" ? "Email sau parolă incorectă." : error.message; 
+            errEl.classList.remove('hidden'); 
+        } 
+        else { 
+            try { posthog.capture('login_success'); } catch(err){}
+            closeAuthModal(); window.location.reload(); 
+        }
+    }
+
+    async function handleLogout() { 
+        try { posthog.reset(); } catch(e){} 
+        await supabaseClient.auth.signOut(); 
+        window.location.reload(); 
+    }
+
+    function toggleAccordion(capId) {
+        const wrap = document.getElementById(capId + '_wrap');
+        const arrow = document.getElementById(capId + '_arrow');
+        if(wrap) wrap.classList.toggle('accordion-open');
+        if(arrow) arrow.classList.toggle('rotated');
+    }
+
+    function toggleSubcaps(capId, isChecked) {
+        const container = document.getElementById(capId + '_wrap');
+        if(container) container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
+    }
+
+    function startFilteredQuiz(mode) {
+        state.currentMode = mode;
+        let pool = [];
+        if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') {
+            pool = [].concat(...Object.values(db));
+        } else {
+            pool = db[state.currentSubject] || [];
+        }
+        
+        if (mode === 'SELECTED') {
+            const selCaps = Array.from(document.querySelectorAll('.cap-cb:checked')).map(c => c.value);
+            const selSubs = Array.from(document.querySelectorAll('.sub-cb:checked')).map(c => c.value);
+            pool = pool.filter(q => selCaps.includes(q.capitol?.trim()) || selSubs.includes(q.subcapitol?.trim()));
+        }
+
+        const originalPool = [...pool];
+        
+        pool = pool.filter(q => {
+            let gid = q.id || q.id_grila || ""; const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/);
+            if (m) gid = gid || m[1]; gid = String(gid);
+            
+            if (mode === 'ERRORS') return state.gresite.includes(gid);
+            return !state.corecte.includes(gid) && !state.gresite.includes(gid); 
+        });
+
+        if (!pool.length && originalPool.length > 0) {
+            pool = originalPool;
+        }
+
+        if (!pool.length) return;
+        
+        state.list = pool.sort(() => Math.random() - 0.5);
+        state.idx = 0;
+        
+        try { 
+            posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); 
+        } catch(e){}
+        
+        navigateTo('scr-quiz'); renderQ();
+    }
+
+
+function renderQ() {
+state.qStartTime = Date.now();
+        state.step = 'select';
+        document.getElementById('auth-prompt').classList.add('hidden');
+        const q = state.list[state.idx];
+        
+        let breadcrumbs = q.computedMaterie || state.currentSubject || 'Mix Global';
+        const cap = q.capitol || "";
+        const subcap = q.subcapitol || "";
+        
+        if (cap && cap !== "General" && cap !== "General - Mix") breadcrumbs += ` &rarr; ${cap}`;
+        if (subcap && subcap !== "General" && subcap !== "") breadcrumbs += ` &rarr; ${subcap}`;
+        
+        document.getElementById('q-meta').innerHTML = breadcrumbs;
+
+        const btn = document.getElementById('btn-action');
+        btn.disabled = true; btn.innerText = "Trimite Răspunsul"; btn.onclick = submitAnswer;
+        btn.className = "w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale shadow-xl";
+        
+        if (state.currentMode === 'EXAM') {
+            document.getElementById('exam-progress-text').innerText = `Grila ${state.idx + 1} din ${state.list.length}`;
+            document.getElementById('exam-progress-bar').style.width = `${((state.idx) / state.list.length) * 100}%`;
+            btn.innerText = state.idx === state.list.length - 1 ? "Finalizează Examenul" : "Salvează și Continuă";
+        }
+        
+        let txt = q.enunt || ""; 
+        let gid = q.id || q.id_grila || "";
+        const m = txt.match(/^\s*(\d+)[\.\-\)]\s+/);
+        if (m) { gid = gid || m[1]; txt = txt.replace(m[0], ''); }
+        
+        txt = txt.replace(/\$/g, ''); 
+        txt = txt.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
+        txt = txt.replace(/_([a-zA-Z0-9])/g, '<sub>$1</sub>');
+        txt = txt.replace(/\^\{([^\}]+)\}/g, '<sup>$1</sup>');
+        txt = txt.replace(/\^([a-zA-Z0-9])/g, '<sup>$1</sup>');
+        txt = txt.replace(/\\cdot/g, '&middot;');
+
+        txt = txt.replace(/(enun[tț]ul|fraza)\s*:\s*(.*?(?:\.|\!|\?))/gi, (match, prefix, continut) => {
+            return `${prefix}: „${continut}”`;
+        });
+        txt = txt.replace(/(cuv[aă]ntului)\s+["„«]?([^\s.,:;!?\)]+)["”»]?/gi, '$1 „$2”');
+
+        const premiumUnderline = '<u class="decoration-academia-gold decoration-[2.5px] underline-offset-[4px] font-black text-academia-navy dark:text-white">$1</u>';
+        
+        txt = txt.replace(/\[\[u\]\](.*?)\[\[\/u\]\]/gi, premiumUnderline);
+        txt = txt.replace(/<u[^>]*>(.*?)<\/u>/gi, premiumUnderline);
+        txt = txt.replace(/\[\[(.*?)\]\]/g, premiumUnderline); 
+        txt = txt.replace(/\*(.*?)\*/g, premiumUnderline);      
+
+        if (q.computedMaterie === 'Logică') {
+            txt = txt.replace(/\s\d+\s/g, ' '); 
+        }
+
+        document.getElementById('q-text').innerHTML = `<div class="font-bold text-xl md:text-2xl leading-snug animate__animated animate__fadeIn text-academia-navy dark:text-white">${txt}</div>`;
+        
+        let sTxt = (gid || q.sursa) ? `Sursa: ${[gid, q.sursa].filter(Boolean).join(", ")}` : "";
+        document.getElementById('q-sursa').innerText = sTxt;
+        
+        const cont = document.getElementById('q-options'); cont.innerHTML = "";
+        ['var_a', 'var_b', 'var_c', 'var_d'].forEach(k => {
+            let val = q[k];
+            if (!val) return;
+            
+            if (typeof val === 'string') {
+                val = val.replace(/\$/g, '');
+                val = val.replace(/_\{([^\}]+)\}/g, '<sub>$1</sub>');
+                val = val.replace(/_([a-zA-Z0-9])/g, '<sub>$1</sub>');
+                val = val.replace(/\^\{([^\}]+)\}/g, '<sup>$1</sup>');
+                val = val.replace(/\^([a-zA-Z0-9])/g, '<sup>$1</sup>');
+                val = val.replace(/\\cdot/g, '&middot;');
+            }
+            
+            const letter = k.split('_')[1].toUpperCase(); 
+            const opt = document.createElement('div');
+            opt.className = "opt-card p-5 glass-card dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl cursor-pointer font-bold flex gap-4 items-center active-scale transition-all";
+            opt.innerHTML = `<span class="w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-sm font-black text-slate-400 dark:text-slate-400 flex-shrink-0 transition-colors">${letter}</span><span class="text-academia-navy dark:text-slate-200 text-lg leading-snug transition-colors">${val}</span>`;
+            opt.onclick = () => {
+                if(state.step !== 'select') return;
+                document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('border-academia-gold', 'bg-academia-goldL', 'dark:bg-slate-900'));
+                opt.classList.add('border-academia-gold', 'bg-academia-goldL', 'dark:bg-slate-900');
+                state.selectedVal = letter; state.selectedEl = opt; btn.disabled = false;
             };
-        }
+            cont.appendChild(opt);
+        });
+    }
 
-        function processRawData(data) {
-            return data.reduce((acc, item) => {
-                const materie = item.materie || item.MATERIE || item.Materie;
-                const enunt = item.enunt || item.ENUNT || item.Enunt;
-                if (!materie || !enunt) return acc;
-                let m = String(materie).trim();
-                const lm = m.toLowerCase();
-                if (lm.includes('română')) m = 'Limba română';
-                else if (lm.includes('economie')) m = 'Economie';
-                else if (lm.includes('logic')) m = 'Logică';
-                item.computedMaterie = m;
-                item.capitol = (item.capitol || "General").trim();
-                item.subcapitol = (item.subcapitol || "General").trim();
-                item.var_a = item.var_a || item.a; item.var_b = item.var_b || item.b;
-                item.var_c = item.var_c || item.c; item.var_d = item.var_d || item.d;
-                item.raspuns_corect = item.raspuns_corect || item.raspuns;
-                if (!acc[m]) acc[m] = []; acc[m].push(item); return acc;
-            }, {});
-        }
 
-        async function init() {
-            const cache = localStorage.getItem('grile_db_premium');
-            if (cache) { db = JSON.parse(cache); renderLobby(); document.getElementById('scr-loading').classList.add('hidden'); }
-            fetch(API_URL).then(r => r.json()).then(data => {
-                db = processRawData(data);
-                localStorage.setItem('grile_db_premium', JSON.stringify(db));
-                if (!cache) { renderLobby(); document.getElementById('scr-loading').classList.add('hidden'); }
-            });
-        }
 
-        function renderLobby() {
-            const list = document.getElementById('subject-list'); list.innerHTML = "";
-            Object.keys(db).forEach(m => {
-                const d = document.createElement('div');
-                d.className = "p-6 glass-card dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-3xl cursor-pointer hover:border-academia-gold transition-all active-scale font-black text-xl flex justify-between items-center group shadow-sm";
-                d.onclick = () => openFilter(m);
-                d.innerHTML = `<span class="dark:text-white">${m}</span> <span class="text-academia-gold group-hover:translate-x-2 transition-transform">&rarr;</span>`;
-                list.appendChild(d);
-            });
-            navigateTo('scr-lobby');
-        }
+   function submitAnswer() {
+        if (state.step !== 'select') return;
+        const q = state.list[state.idx];
+        
+        // Preluăm răspunsul corect sigur, eliminând spațiile ascunse
+        const cor = (q.raspuns_corect || "").trim().toUpperCase();
+        const corIdx = ['A','B','C','D'].indexOf(cor); 
+        
+        // REPARAȚIA CRITICĂ: Evităm eroarea fatală CSS și accesăm direct DOM-ul
+        const allCards = document.querySelectorAll('.opt-card');
+        const corEl = corIdx >= 0 ? allCards[corIdx] : null;
+        
+        let gid = q.id || q.id_grila || "";
+        const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
+        if (matchGid) gid = gid || matchGid[1];
+        
+        // Efecte vizuale: estompăm tot, evidențiem selecțiile
+        allCards.forEach(c => c.classList.add('opacity-30'));
+        if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
+        if (corEl) corEl.classList.remove('opacity-30');
+        
+        const isCorrect = state.selectedVal === cor;
+        
+        if (state.selectedEl) {
+            state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            state.selectedEl.classList.add('text-white');
 
-        function openFilter(m) {
-            state.currentSubject = m;
-            document.getElementById('filter-title').innerText = m;
-            const caps = [...new Set(db[m].map(q => q.capitol))];
-            const cont = document.getElementById('filter-list'); cont.innerHTML = "";
-            caps.forEach(cap => {
-                const html = `<label class="flex items-center p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer"><input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}"><span class="font-bold text-lg dark:text-white">${cap}</span></label>`;
-                cont.innerHTML += html;
-            });
-            navigateTo('scr-filter');
-        }
-
-        function startFilteredQuiz(mode) {
-            let pool = (mode === 'GLOBAL_RANDOM') ? [].concat(...Object.values(db)) : db[state.currentSubject];
-            if (mode === 'SELECTED') {
-                const sel = Array.from(document.querySelectorAll('.cap-cb:checked')).map(c => c.value);
-                pool = pool.filter(q => sel.includes(q.capitol));
+            if (isCorrect) {
+                state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
+            } else {
+                state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
             }
-            if (!pool.length) return;
-            state.list = pool.sort(() => Math.random() - 0.5);
-            state.idx = 0;
-            navigateTo('scr-quiz'); renderQ();
         }
+        
+        // Afișăm răspunsul corect doar dacă a fost greșit și doar dacă acesta există fizic în date
+        if (!isCorrect && corEl) {
+            corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+            corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
+        }
+        
+        if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
+        
+        if (!currentUser && state.currentMode !== 'EXAM') {
+            document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează.";
+            document.getElementById('auth-prompt').classList.remove('hidden');
+        }
+        
+        state.step = 'validate'; 
+        const btn = document.getElementById('btn-action');
+        btn.innerText = "Continuă cu următoarea grilă \u2192"; 
+        btn.classList.add('bg-academia-gold', 'text-white');
 
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+        btn.onclick = () => { 
+            state.idx++; 
+            if (state.idx < state.list.length) { renderQ(); } 
+            else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } 
+        };
+    }
+
+function processRawData(data) {
+        const formatString = (str, isEcoLog) => {
+            if (isEcoLog) return "General";
+            if (!str) return "General";
+            let cleaned = String(str).trim();
+            if (!cleaned || cleaned.toLowerCase() === "general") return "General";
+            return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+        };
+
+        return data.reduce((acc, item) => {
+            const materie = item.materie || item.MATERIE || item.Materie;
+            const enunt = item.enunt || item.ENUNT || item.Enunt;
+            if (!materie || !enunt || String(enunt).trim() === "") return acc;
+            
+            let rawM = String(materie).trim();
+            let m = rawM;
+            const lowerM = rawM.toLowerCase();
+            let isEcoLog = false;
+            
+            if (lowerM.includes('română')) m = 'Limba română';
+            else if (lowerM.includes('economie')) { m = 'Economie'; isEcoLog = true; }
+            else if (lowerM.includes('gândire') || lowerM.includes('logic')) { m = 'Logică'; isEcoLog = true; }
+
+            let cap = String(item.capitol || item.CAPITOL || item.Capitol || "").trim();
+            let sub = String(item.subcapitol || item.SUBCAPITOL || item.Subcapitol || item.sub || "").trim();
+
+            let capL = cap.toLowerCase();
+            let subL = sub.toLowerCase();
+
+            // UNIFICARE CAPITOL
+            if (capL.includes("gramatică") || capL.includes("gramatica")) cap = "Gramatică";
+            if (capL.includes("ortografie") || capL.includes("ortoepie") || capL.includes("lexico-semantice")) {
+                cap = "Ortografie, ortoepie și punctuație";
+            }
+            
+            // UNIFICARE SUBCAPITOL (Păstrăm detaliile, dar unificăm variantele de sintaxă)
+            if (subL.includes("sintaxa frazei") || subL.includes("enunțul") || subL.includes("propoziția") || subL.includes("fraza") || subL.includes("enuntul") || subL.includes("propozitia")) {
+                sub = "Enunțul, propoziția și fraza";
+            }
+            
+            // Dacă subcapitolul devine identic cu capitolul după curățare, îl facem "General" ca să nu apară dublat
+            if (sub.toLowerCase().trim() === cap.toLowerCase().trim()) {
+                sub = "General";
+            }
+
+            item.capitol = formatString(cap, false);
+            item.subcapitol = formatString(sub, isEcoLog);
+            item.computedMaterie = m;
+
+            // Forțăm maparea independent de cum sunt scrise coloanele în Excel (A, a, var_a)
+            item.var_a = item.var_a || item.VAR_A || item.a || item.A;
+            item.var_b = item.var_b || item.VAR_B || item.b || item.B;
+            item.var_c = item.var_c || item.VAR_C || item.c || item.C;
+            item.var_d = item.var_d || item.VAR_D || item.d || item.D;
+            item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns || item.Raspuns || 			item.Corect || item.CORECT;
+
+            if (!acc[m]) acc[m] = [];
+            acc[m].push(item);
+            return acc;
+        }, {});
+    }
+
+
+    async function init() {
+        try {
+            if(!window.supabase) {
+                setTimeout(init, 100); 
+                return;
+            }
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            const cachedData = localStorage.getItem('grile_db_premium');
+            if (cachedData) {
+                db = JSON.parse(cachedData);
+                renderLobby();
+                document.getElementById('scr-loading').classList.add('hidden'); 
+            } else {
+                document.getElementById('scr-loading').classList.remove('hidden');
+            }
+            
+            checkSession().catch(e => console.log("Auth silent fail"));
+            
+            fetch(API_URL)
+                .then(res => {
+                    if(!res.ok) throw new Error("Eroare rețea");
+                    return res.json();
+                })
+                .then(data => {
+                    const freshDb = processRawData(data);
+                    localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
+                    
+                    if (!cachedData) {
+                        db = freshDb;
+                        renderLobby();
+                        document.getElementById('scr-loading').classList.add('hidden');
+                    }
+                })
+                .catch(err => console.log("Avertisment fetch fundal:", err));
+            
+        } catch(e) {
+            document.getElementById('error-details').innerText = e.message;
+            document.getElementById('scr-loading').classList.add('hidden');
+            navigateTo('scr-error');
+        }
+    }
+
+    function renderLobby() {
+        const list = document.getElementById('subject-list'); list.innerHTML = "";
+        Object.keys(db).forEach(m => {
+            const d = document.createElement('div');
+            d.className = "p-6 glass-card dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-3xl cursor-pointer hover:border-academia-gold transition-all active-scale font-black text-xl flex justify-between items-center group shadow-sm";
+            d.onclick = () => {
+                try { posthog.capture('materie_selectata', { materie: m }); } catch(err){}
+                openFilter(m);
+            };
+            d.innerHTML = `<span class="dark:text-white">${m}</span> <span class="text-academia-gold group-hover:translate-x-2 transition-transform">&rarr;</span>`;
+            list.appendChild(d);
+        });
+        navigateTo('scr-lobby'); updateLobbyUI();
+    }
+
+    function openFilter(m) {
+        state.currentSubject = m; 
+        document.getElementById('filter-title').innerText = m;
+        const capsData = {};
+        
+        db[m].forEach(q => {
+            const c = q.capitol || "General - Mix";
+            const sc = q.subcapitol || "General";
+            if (!capsData[c]) capsData[c] = { subcaps: {} };
+            if (sc !== "General") {
+                if (!capsData[c].subcaps[sc]) capsData[c].subcaps[sc] = 1;
+            }
+        });
+        
+        let sortedCaps = Object.keys(capsData);
+        sortedCaps.sort((a, b) => a.localeCompare(b, 'ro'));
+
+        const cont = document.getElementById('filter-list'); 
+        cont.innerHTML = "";
+
+        sortedCaps.forEach(cap => {
+            // Generăm un ID sigur (fără spații, virgule sau diacritice care strică JS-ul)
+            const capId = 'cap_' + cap.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+            
+            let html = `<div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-3 transition-colors duration-300">`;
+            const subKeys = Object.keys(capsData[cap].subcaps);
+            subKeys.sort((a, b) => a.localeCompare(b, 'ro'));
+            
+            if (subKeys.length > 0) {
+                html += `
+                    <div class="flex items-center p-5 cursor-pointer select-none" onclick="toggleAccordion('${capId}')">
+                        <input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}" onchange="event.stopPropagation(); toggleSubcaps('${capId}', this.checked)">
+                        <span class="font-bold text-lg text-academia-navy dark:text-white flex-1">${cap}</span>
+                        <span id="${capId}_arrow" class="arrow-rotate text-academia-gold font-bold text-xl px-2">&#9662;</span>
+                    </div>
+                    <div id="${capId}_wrap" class="accordion-content">
+                        <div class="bg-white dark:bg-slate-900 transition-colors duration-300">
+                            <div class="pl-14 pr-5 pb-5 space-y-4 border-t border-slate-200 dark:border-slate-700 pt-4">
+                                ${subKeys.map(sub => `
+                                    <label class="flex items-center gap-3 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer active:opacity-70 transition-opacity text-base">
+                                        <input type="checkbox" class="sub-cb w-5 h-5 accent-academia-gold" value="${sub}"> <span class="leading-tight">${sub}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                html += `<label class="flex items-center p-5 cursor-pointer"><input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}"><span class="font-bold text-lg dark:text-white">${cap}</span></label>`;
+            }
+            html += `</div>`;
+            cont.innerHTML += html;
+        });
+        navigateTo('scr-filter');
+    }
+
+
+
+    function finishExam() {
+        examState.isActive = false;
+        clearInterval(examState.timer);
+        
+        document.getElementById('main-nav').classList.remove('hidden');
+        document.getElementById('exam-header').classList.add('hidden');
+        document.getElementById('exam-header').classList.remove('flex');
+        
+        let scor = 0;
+        state.list.forEach((q, index) => {
+            let gid = q.id || q.id_grila || ""; 
+            const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/); 
+            if (m) gid = gid || m[1];
+            gid = gid || index;
+
+            let raspunsElev = examState.userAnswers[gid] || "N/A";
+            let raspunsCorect = (q.raspuns_corect || "").trim().toUpperCase();
+            let status = (raspunsElev === raspunsCorect) ? 'corect' : 'gresit';
+            
+            if (status === 'corect') scor++;
+        });
+        
+        let procent = Math.round((scor / state.list.length) * 100);
+        
+        try {
+            posthog.capture('examen_finalizat', { 
+                scor: scor, 
+                total_grile: state.list.length, 
+                acuratete: procent,
+                timp_ramas_secunde: examState.timeLeftSec
+            });
+        } catch(e) {}
+        
+        const quizCard = document.querySelector('#scr-quiz > div');
+        quizCard.innerHTML = `
+            <div class="text-center py-12 animate__animated animate__fadeIn">
+                <h2 class="text-4xl md:text-5xl font-black text-academia-navy dark:text-white mb-4">Examen Finalizat</h2>
+                <p class="text-slate-500 dark:text-slate-400 mb-10 font-bold uppercase tracking-widest text-xs">Raport de performanță</p>
+                
+                <div class="inline-flex items-center justify-center w-40 h-40 rounded-full border-[8px] ${procent >= 70 ? 'border-emerald-500 text-emerald-500' : 'border-academia-gold text-academia-gold'} mb-8 shadow-xl">
+                    <span class="text-5xl font-black">${scor}/${state.list.length}</span>
+                </div>
+                
+                <h3 class="text-3xl font-black text-academia-navy dark:text-white mb-10">${procent}% Acuratețe</h3>
+                
+                <button onclick="window.location.reload()" class="w-full max-w-md py-6 bg-academia-navy text-academia-gold rounded-[24px] font-black text-xl border-none cursor-pointer active-scale shadow-2xl hover:shadow-lg transition-all">Revenire la Dashboard</button>
+            </div>
+        `;
+        
+        if(procent >= 70) confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('popstate', (e) => { navigateTo('scr-lobby'); });
+    function goBack() { navigateTo('scr-lobby'); }
+</script>
 </body>
 </html>
