@@ -750,42 +750,54 @@ state.qStartTime = Date.now();
         });
     }
 
-    function submitAnswer() {
+
+
+   function submitAnswer() {
         if (state.step !== 'select') return;
         const q = state.list[state.idx];
+        
+        // Preluăm răspunsul corect sigur, eliminând spațiile ascunse
         const cor = (q.raspuns_corect || "").trim().toUpperCase();
-        const corIdx = ['A','B','C','D'].indexOf(cor); const corEl = document.querySelector(`.opt-card:nth-child(${corIdx + 1})`);
+        const corIdx = ['A','B','C','D'].indexOf(cor); 
+        
+        // REPARAȚIA CRITICĂ: Evităm eroarea fatală CSS și accesăm direct DOM-ul
+        const allCards = document.querySelectorAll('.opt-card');
+        const corEl = corIdx >= 0 ? allCards[corIdx] : null;
         
         let gid = q.id || q.id_grila || "";
         const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
         if (matchGid) gid = gid || matchGid[1];
         
-        document.querySelectorAll('.opt-card').forEach(c => c.classList.add('opacity-30'));
-        [state.selectedEl, corEl].forEach(c => c?.classList.remove('opacity-30'));
+        // Efecte vizuale: estompăm tot, evidențiem selecțiile
+        allCards.forEach(c => c.classList.add('opacity-30'));
+        if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
+        if (corEl) corEl.classList.remove('opacity-30');
         
         const isCorrect = state.selectedVal === cor;
-        state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-        state.selectedEl.classList.add('text-white');
+        
+        if (state.selectedEl) {
+            state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            state.selectedEl.classList.add('text-white');
 
-        if (isCorrect) {
-            state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
-            state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
-            const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
-if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, isCorrect ? 'corect' : 'gresit', duration);
-            
-            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
-            
-        } else {
-            state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
-            state.selectedEl.querySelectorAll('span').forEach(s=>s.classList.add('text-white', 'border-white'));
-            if (corEl) {
-                corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-                corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-                corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
+            if (isCorrect) {
+                state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
+            } else {
+                state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
             }
-            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
-            
-            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
+        }
+        
+        // Afișăm răspunsul corect doar dacă a fost greșit și doar dacă acesta există fizic în date
+        if (!isCorrect && corEl) {
+            corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+            corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
         }
         
         if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
@@ -795,10 +807,16 @@ if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || sta
             document.getElementById('auth-prompt').classList.remove('hidden');
         }
         
-        state.step = 'validate'; const btn = document.getElementById('btn-action');
-        btn.innerText = "Continuă cu următoarea grilă \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
+        state.step = 'validate'; 
+        const btn = document.getElementById('btn-action');
+        btn.innerText = "Continuă cu următoarea grilă \u2192"; 
+        btn.classList.add('bg-academia-gold', 'text-white');
 
-        btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } };
+        btn.onclick = () => { 
+            state.idx++; 
+            if (state.idx < state.list.length) { renderQ(); } 
+            else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } 
+        };
     }
 
 function processRawData(data) {
@@ -850,11 +868,12 @@ function processRawData(data) {
             item.subcapitol = formatString(sub, isEcoLog);
             item.computedMaterie = m;
 
-            item.var_a = item.var_a || item.VAR_A || item.a;
-            item.var_b = item.var_b || item.VAR_B || item.b;
-            item.var_c = item.var_c || item.VAR_C || item.c;
-            item.var_d = item.var_d || item.VAR_D || item.d;
-            item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns;
+            // Forțăm maparea independent de cum sunt scrise coloanele în Excel (A, a, var_a)
+            item.var_a = item.var_a || item.VAR_A || item.a || item.A;
+            item.var_b = item.var_b || item.VAR_B || item.b || item.B;
+            item.var_c = item.var_c || item.VAR_C || item.c || item.C;
+            item.var_d = item.var_d || item.VAR_D || item.d || item.D;
+            item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns || item.Raspuns || 			item.Corect || item.CORECT;
 
             if (!acc[m]) acc[m] = [];
             acc[m].push(item);
