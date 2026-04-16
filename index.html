@@ -44,6 +44,21 @@
 });
     </script>
 
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+	<script>
+    	window.dataLayer = window.dataLayer || [];
+    	function gtag(){dataLayer.push(arguments);}
+    	gtag('js', new Date());
+
+   	 // DEZACTIVĂM auto-pageview. Controlăm rutele manual din JS.
+    	gtag('config', 'G-Q2XGH2Q1XD', { 
+     	   send_page_view: false,
+     	   cookie_flags: 'SameSite=None;Secure' // Securitate sporită
+   	 });
+	</script>
+
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -357,10 +372,29 @@
     }
 
     function navigateTo(id) {
-        ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); });
-        const target = document.getElementById(id);
-        if(target) { target.classList.remove('hidden'); target.classList.add('animate__fadeIn'); }
+    // 1. Logica originală de afișare/ascundere
+    ['scr-loading', 'scr-error', 'scr-lobby', 'scr-filter', 'scr-quiz'].forEach(s => { 
+        const el = document.getElementById(s); 
+        if(el) el.classList.add('hidden'); 
+    });
+    
+    const target = document.getElementById(id);
+    if(target) { 
+        target.classList.remove('hidden'); 
+        target.classList.add('animate__fadeIn'); 
     }
+
+    // 2. Transmisie Telemetrie Google Analytics 4
+    if (typeof gtag === 'function') {
+        // Curățăm ID-ul pentru a arăta ca o rută curată (ex: scr-lobby -> /lobby)
+        const cleanPath = '/' + id.replace('scr-', '');
+        
+        gtag('event', 'page_view', {
+            page_path: cleanPath,
+            page_title: cleanPath.toUpperCase().replace('/', '')
+        });
+    }
+}
 
     document.addEventListener('click', (e) => {
         const btn = document.getElementById('btn-profile'); const menu = document.getElementById('profile-menu');
@@ -578,14 +612,22 @@
         
         if (error) { 
             // Traducem erorile tehnice în mesaje umane
-            errEl.innerText = error.message === "User already registered" ? "Acest email are deja cont. Folosește butonul Conectare." : error.message; 
+            errEl.innerText = error.message === "User already registered" ? "Acest email are deja cont. 	Folosește butonul Conectare." : error.message; 
             errEl.classList.remove('hidden'); 
         } 
-        else { 
-            try { posthog.capture('register_success'); } catch(err){}
-            closeAuthModal(); window.location.reload(); 
-        }
-    }
+        // În interiorul funcției handleRegister(), pe ramura de succes (else):
+	else { 
+  		  try { posthog.capture('register_success'); } catch(err){}
+    
+    			// Raportăm conversia către GA4
+    		if (typeof gtag === 'function') {
+       	 gtag('event', 'sign_up', { method: 'email' });
+    	}
+    
+    closeAuthModal(); 
+    window.location.reload(); 
+}
+    
 
     async function handleLogin() {
         const e = document.getElementById('auth-email').value; 
