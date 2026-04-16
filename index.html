@@ -931,47 +931,67 @@ function processRawData(data) {
 
 
     async function init() {
-        try {
-            if(!window.supabase) {
-                setTimeout(init, 100); 
-                return;
+    try {
+        // 1. Prevenim bucla infinită. Oferim un timeout de 5 secunde (50 x 100ms)
+        if (!window.supabase) {
+            if (!window.supabaseRetryCount) window.supabaseRetryCount = 0;
+            window.supabaseRetryCount++;
+            if (window.supabaseRetryCount > 50) { 
+                throw new Error("Nu s-a putut încărca modulul de securitate (Supabase). Dezactivează temporar scuturile/AdBlocker-ul.");
             }
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            const cachedData = localStorage.getItem('grile_db_premium');
-            if (cachedData) {
-                db = JSON.parse(cachedData);
-                renderLobby();
-                document.getElementById('scr-loading').classList.add('hidden'); 
-            } else {
-                document.getElementById('scr-loading').classList.remove('hidden');
-            }
-            
-            checkSession().catch(e => console.log("Auth silent fail"));
-            
-            fetch(API_URL)
-                .then(res => {
-                    if(!res.ok) throw new Error("Eroare rețea");
-                    return res.json();
-                })
-                .then(data => {
-                    const freshDb = processRawData(data);
-                    localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
-                    
-                    if (!cachedData) {
-                        db = freshDb;
-                        renderLobby();
-                        document.getElementById('scr-loading').classList.add('hidden');
-                    }
-                })
-                .catch(err => console.log("Avertisment fetch fundal:", err));
-            
-        } catch(e) {
-            document.getElementById('error-details').innerText = e.message;
-            document.getElementById('scr-loading').classList.add('hidden');
-            navigateTo('scr-error');
+            setTimeout(init, 100); 
+            return;
         }
+
+        // Inițializare normală
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const cachedData = localStorage.getItem('grile_db_premium');
+        if (cachedData) {
+            db = JSON.parse(cachedData);
+            renderLobby();
+            document.getElementById('scr-loading').classList.add('hidden'); 
+        } else {
+            document.getElementById('scr-loading').classList.remove('hidden');
+        }
+        
+        checkSession().catch(e => console.log("Auth silent fail"));
+        
+        // 2. Fetch API cu tratarea corectă a blocajului
+        fetch(API_URL)
+            .then(res => {
+                if(!res.ok) throw new Error("Eroare de comunicare cu serverul (" + res.status + ")");
+                return res.json();
+            })
+            .then(data => {
+                const freshDb = processRawData(data);
+                localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
+                
+                if (!cachedData) {
+                    db = freshDb;
+                    renderLobby();
+                    document.getElementById('scr-loading').classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.error("Eroare critică fetch API:", err);
+                // AUTO-CRITICĂ: Dacă nu avem cache și fetch-ul pică, SCOATEM forțat userul din loading
+                if (!cachedData) {
+                    document.getElementById('scr-loading').classList.add('hidden');
+                    document.getElementById('error-details').innerText = "Nu am putut descărca baza de date. Detalii tehnice: " + err.message;
+                    navigateTo('scr-error');
+                }
+            });
+        
+    } catch(e) {
+        // Prindem orice excepție (inclusiv timeout-ul Supabase) și o afișăm vizual
+        document.getElementById('error-details').innerText = e.message;
+        document.getElementById('scr-loading').classList.add('hidden');
+        navigateTo('scr-error');
     }
+}
+
+
 
     function renderLobby() {
         const list = document.getElementById('subject-list'); list.innerHTML = "";
