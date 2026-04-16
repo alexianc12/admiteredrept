@@ -128,17 +128,15 @@
                 <svg class="w-5 h-5 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </button>
             
-            <div id="profile-menu" class="hidden absolute right-0 top-full mt-3 w-80 glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl py-0 z-50 overflow-hidden transition-colors duration-300">
+            <div id="profile-menu" class="hidden absolute right-0 top-full mt-3 w-72 glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl py-0 z-50 overflow-hidden transition-colors duration-300">
                 <div id="menu-logged-out" class="p-4">
                     <button onclick="showAuthModal()" class="w-full py-3 bg-academia-navy text-academia-gold rounded-xl font-bold text-sm border-none cursor-pointer hover:shadow-lg transition-all">Logare / Cont Nou</button>
                 </div>
-                <div id="menu-logged-in" class="hidden flex flex-col">
-                    <div id="user-stats-container"></div>
-                    <div class="p-5 border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-800/50 rounded-b-[24px]">
-                        <p id="user-email-display" class="text-xs text-slate-400 font-bold truncate mb-3">...</p>
-                        <button onclick="handleLogout()" class="w-full py-2 text-sm text-rose-500 font-bold hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors border-none bg-transparent cursor-pointer text-left">Deconectare Sesiune</button>
-                    </div>
+                <div id="menu-logged-in" class="hidden flex flex-col p-4">
+                    <p id="user-email-display" class="text-xs text-slate-400 font-bold truncate mb-4 text-center">...</p>
+                    <button onclick="handleLogout()" class="w-full py-3 text-sm text-rose-500 font-bold bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors border-none cursor-pointer text-center">Deconectare Sesiune</button>
                 </div>
+            </div>
             </div>
         </div>
     </nav>
@@ -163,11 +161,15 @@
                     SIMULARE EXAMEN (focus Mode)
                 </button>
                 <div id="subject-list" class="grid gap-4 mb-6"></div>
+                
                 <div id="btn-vault" onclick="startFilteredQuiz('ERRORS')" class="hidden mt-4 mx-auto w-max px-5 py-2 glass-card dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-slate-200 dark:border-slate-800 hover:border-rose-200 rounded-full cursor-pointer transition-all active-scale flex items-center gap-2 group shadow-sm">
                     <svg class="w-4 h-4 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     <span class="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:text-rose-600 transition-colors">Revizuire: <span id="vault-count" class="text-academia-navy dark:text-academia-gold group-hover:text-rose-600 font-black">0</span> grile</span>
                 </div>
+                
+                <div id="user-stats-container" class="hidden mt-10 w-full"></div>
             </div>
+            
 
             <div id="scr-filter" class="hidden max-w-3xl mx-auto mt-6">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-xl p-8 transition-colors duration-300">
@@ -420,72 +422,115 @@
         }
     }
 
-    function updateProfileUI() {
-    const outDiv = document.getElementById('menu-logged-out'); 
-    const inDiv = document.getElementById('menu-logged-in');
-    if (!currentUser) { if(outDiv) outDiv.classList.remove('hidden'); if(inDiv) inDiv.classList.add('hidden'); return; }
-    
-    if(outDiv) outDiv.classList.add('hidden'); if(inDiv) inDiv.classList.remove('hidden');
-    document.getElementById('user-email-display').innerText = currentUser.email;
-    
-    // Calculăm datele globale
-    const totalRezolvate = state.rawProgress.length; // Numărul total de grile din baza de date
-    const gLen = state.gresite.length;
-    
-    let subjHtml = '';
-    // REPARARE: Inițializăm matStats ca obiecte pentru a evita "undefined"
-    const matStats = { 
-        'Limba română': { count: 0, time: 0 }, 
-        'Economie': { count: 0, time: 0 }, 
-        'Logică': { count: 0, time: 0 } 
-    };
+   function updateProfileUI() {
+        const outDiv = document.getElementById('menu-logged-out'); 
+        const inDiv = document.getElementById('menu-logged-in');
+        const statsCont = document.getElementById('user-stats-container');
 
-    state.rawProgress.forEach(p => { 
-        if (matStats[p.materie]) {
-            matStats[p.materie].count++; 
-            matStats[p.materie].time += (p.durata_secunde || 0); // Presupunem că stochezi durata
+        if (!currentUser) { 
+            if(outDiv) outDiv.classList.remove('hidden'); 
+            if(inDiv) inDiv.classList.add('hidden'); 
+            if(statsCont) statsCont.classList.add('hidden'); 
+            return; 
         }
-    });
-    
-    Object.entries(matStats).forEach(([subj, data]) => {
-        const avgTime = data.count > 0 ? Math.round(data.time / data.count) : 0;
-        const timeColor = avgTime < 45 ? 'text-emerald-500' : (avgTime < 90 ? 'text-academia-gold' : 'text-rose-500');
+        
+        if(outDiv) outDiv.classList.add('hidden'); 
+        if(inDiv) inDiv.classList.remove('hidden');
+        if(statsCont) statsCont.classList.remove('hidden');
 
-        subjHtml += `
-            <div class="mb-5 p-3 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-colors duration-300">
-                <div class="flex justify-between items-end mb-2">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${subj}</p>
-                        <p class="text-sm font-black dark:text-white">${data.count} <span class="text-[10px] text-slate-400 font-bold uppercase">rezolvate</span></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Timp Mediu</p>
-                        <p class="text-sm font-black ${timeColor}">${avgTime}s <span class="text-[10px] text-slate-400">/ grilă</span></p>
-                    </div>
-                </div>
-            </div>`;
-    });
+        document.getElementById('user-email-display').innerText = currentUser.email;
+        
+        const totalRezolvate = state.rawProgress.length; 
+        const gLen = state.gresite.length;
+        
+        let subjHtml = '';
+        const matStats = { 
+            'Limba română': { count: 0, time: 0 }, 
+            'Economie': { count: 0, time: 0 }, 
+            'Logică': { count: 0, time: 0 } 
+        };
 
-    const statsCont = document.getElementById('user-stats-container');
-    if(statsCont) {
-        statsCont.innerHTML = `
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800 max-h-[60vh] overflow-y-auto custom-scroll">
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4">Analiză Performanță</p>
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center transition-colors">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Nr. Total Grile</p>
-                        <p class="text-3xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
+        // CRITIC: Normalizare inteligentă a materiilor din istoric pentru a nu pierde grile (Diferența până la 100)
+        state.rawProgress.forEach(p => { 
+            let matNume = String(p.materie || "").trim().toLowerCase();
+            let key = null;
+            
+            if (matNume.includes('român') || matNume.includes('roman')) key = 'Limba română';
+            else if (matNume.includes('eco')) key = 'Economie';
+            else if (matNume.includes('logic') || matNume.includes('gândire')) key = 'Logică';
+
+            if (key && matStats[key]) {
+                matStats[key].count++; 
+                matStats[key].time += (p.durata_secunde || 0); 
+            }
+        });
+        
+        Object.entries(matStats).forEach(([subj, data]) => {
+            const avgTime = data.count > 0 ? Math.round(data.time / data.count) : 0;
+            const timeColor = avgTime < 45 ? 'text-emerald-500' : (avgTime < 90 ? 'text-academia-gold' : 'text-rose-500');
+
+            subjHtml += `
+                <div class="p-5 glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-sm transition-colors duration-300">
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${subj}</p>
+                            <p class="text-xl font-black text-academia-navy dark:text-white">${data.count} <span class="text-[10px] text-slate-400 font-bold uppercase">rezolvate</span></p>
+                        </div>
+                        <div class="pt-3">
+                            
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col justify-center transition-colors">
-                        <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-1">Erori Active</p>
-                        <p class="text-3xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
                     </div>
-                </div>
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 mt-2">Harta Stăpânirii Bazei</p>
-                ${subjHtml}
-            </div>`;
+                </div>`;
+        });
+
+        if(statsCont) {
+            statsCont.innerHTML = `
+                <div class="pt-10 mt-6 border-t border-slate-200 dark:border-slate-800 animate__animated animate__fadeIn">
+                    <p class="text-xs text-slate-400 font-black uppercase tracking-widest mb-6 text-center">Dashboard Date</p>
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="glass-card dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center transition-colors">
+                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-2">Total Grile Rezolvate</p>
+                            <p class="text-4xl md:text-5xl font-black text-academia-navy dark:text-white">${totalRezolvate}</p>
+                        </div>
+                        <div class="bg-rose-50 dark:bg-rose-900/20 p-6 rounded-[32px] border border-rose-100 dark:border-rose-900/50 shadow-sm flex flex-col items-center justify-center transition-colors">
+                            <p class="text-[10px] text-rose-400 font-black uppercase tracking-wider mb-2">Grile Gresite</p>
+                            <p class="text-4xl md:text-5xl font-black text-rose-600 dark:text-rose-500">${gLen}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${subjHtml}
+                    </div>
+                </div>`;
+        }
     }
-}
+
+
+
+
+    async function checkSession() {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            currentUser = session?.user || null;
+            if (currentUser) {
+                try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
+                
+                // CRITIC: Adăugat 'durata_secunde' în query-ul de select
+                const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie, durata_secunde').eq('user_id', currentUser.id);
+                updateStreak(); 
+                
+                const { data } = await progressPromise;
+                if (data) {
+                    state.rawProgress = data;
+                    state.corecte = data.filter(d => d.status === 'corect').map(d => String(d.grila_id));
+                    state.gresite = data.filter(d => d.status === 'gresit').map(d => String(d.grila_id));
+                }
+                
+                document.getElementById('auth-prompt')?.classList.add('hidden');
+            }
+            updateProfileUI(); updateLobbyUI();
+        } catch(e) { console.error("Eroare sesiune:", e); }
+    }
 
     async function checkSession() {
         try {
@@ -568,14 +613,15 @@
             console.log("Conexiunea la tabela de streak nu este încă activă.");
         }
     }
-    async function saveProgressToCloud(grilaId, materie, statusStr) {
+    async function saveProgressToCloud(grilaId, materie, statusStr, durationSec = 0) {
         if (!currentUser) return;
         const idStr = String(grilaId);
         if (statusStr === 'corect' && state.corecte.includes(idStr)) return;
         
+        // CRITIC: Trimitem durata către Supabase (necesită coloana durata_secunde în tabel)
         const { error } = await supabaseClient
             .from('user_progress')
-            .upsert({ user_id: currentUser.id, grila_id: idStr, materie: materie, status: statusStr }, { onConflict: 'user_id, grila_id' });
+            .upsert({ user_id: currentUser.id, grila_id: idStr, materie: materie, status: statusStr, durata_secunde: durationSec }, { onConflict: 'user_id, grila_id' });
             
         if (!error) {
             if (statusStr === 'corect') {
@@ -584,8 +630,15 @@
             } else {
                 if (!state.gresite.includes(idStr)) state.gresite.push(idStr);
             }
+            
             const target = state.rawProgress.find(p => p.grila_id === idStr);
-            if (target) target.status = statusStr; else state.rawProgress.push({ grila_id: idStr, status: statusStr, materie: materie });
+            if (target) {
+                target.status = statusStr;
+                target.durata_secunde = durationSec;
+            } else {
+                state.rawProgress.push({ grila_id: idStr, status: statusStr, materie: materie, durata_secunde: durationSec });
+            }
+            
             updateProfileUI(); updateLobbyUI();
         }
     }
@@ -828,16 +881,18 @@ state.qStartTime = Date.now();
             state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
             state.selectedEl.classList.add('text-white');
 
+            // CRITIC: Calculăm durata o singură dată și o trimitem către baza de date mereu
+            const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+
             if (isCorrect) {
                 state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
                 state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-                const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
                 if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
                 try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
             } else {
                 state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
                 state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit');
+                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit', duration);
                 try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
             }
         }
