@@ -348,6 +348,22 @@
 
 
 <script>
+const ROUTES = {
+    '/': 'scr-home',
+    '/statistici': 'scr-stats',
+    '/grile': 'scr-lobby',
+    '/simulare': 'scr-quiz'
+};
+
+const TITLES = {
+    'scr-home': 'Acasă | Academia de Drept',
+    'scr-stats': 'Statistici Performanță',
+    'scr-lobby': 'Alege Materia',
+    'scr-filter': 'Configurare Grile',
+    'scr-quiz': 'Simulare în Curs'
+};
+
+
     const API_URL = "https://script.google.com/macros/s/AKfycbybB7Loqhsu2RCI4clEmvpY7IVscyV_Kdr1TRzbNioSbhy3lGmcXDIRD9dWW8kHv0ei/exec";
     const SUPABASE_URL = 'https://mrxyaofzjhunmewqjwyr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeHlhb2Z6amh1bm1ld3Fqd3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODI0MDEsImV4cCI6MjA5MTE1ODQwMX0.Q8Tj7CzXP4fJxaKcMP-s7wYEevuKlvp--anr0I-j7DQ';
@@ -438,33 +454,78 @@
         document.documentElement.classList.add('dark');
     }
 
-    function navigateTo(id) {
-        ['scr-loading', 'scr-error', 'scr-home', 'scr-lobby', 'scr-stats', 'scr-filter', 'scr-quiz'].forEach(s => { 
-            const el = document.getElementById(s); 
-            if(el) el.classList.add('hidden'); 
-        });
-        
-        const target = document.getElementById(id);
-        if(target) { 
-            target.classList.remove('hidden'); 
-            const instantScreens = ['scr-home', 'scr-lobby', 'scr-stats'];
-            if (!instantScreens.includes(id)) { target.classList.add('animate__fadeIn'); } 
-            else { target.classList.remove('animate__fadeIn'); }
-        }
+   function navigateTo(id, silent = false) {
+    ['scr-loading', 'scr-error', 'scr-home', 'scr-lobby', 'scr-stats', 'scr-filter', 'scr-quiz'].forEach(s => { 
+        document.getElementById(s)?.classList.add('hidden'); 
+    });
 
-        const btns = { 'scr-home': document.getElementById('nav-btn-home'), 'scr-lobby': document.getElementById('nav-btn-grile'), 'scr-filter': document.getElementById('nav-btn-grile'), 'scr-quiz': document.getElementById('nav-btn-grile'), 'scr-stats': document.getElementById('nav-btn-stats') };
-        const activeClasses = ['bg-white', 'dark:bg-slate-900', 'text-academia-navy', 'dark:text-white', 'shadow-sm'];
-        const inactiveClasses = ['text-slate-500', 'dark:text-slate-400', 'bg-transparent'];
+    const target = document.getElementById(id);
+    if(target) {
+        target.classList.remove('hidden');
+        document.title = TITLES[id] || 'Academia de Drept';
 
-        Object.values(btns).forEach(btn => { if(btn) { btn.classList.add(...inactiveClasses); btn.classList.remove(...activeClasses); } });
-        const activeBtn = btns[id];
-        if(activeBtn) { activeBtn.classList.add(...activeClasses); activeBtn.classList.remove(...inactiveClasses); }
+        if (!silent) {
+            let path = '/';
+            if (id === 'scr-stats') path = '/statistici';
+            if (id === 'scr-lobby') path = '/grile';
+            if (id === 'scr-quiz') path = '/simulare';
+            if (id === 'scr-filter' && state.currentSubject) {
+                // Generăm un slug curat: /grile/limba-romana
+                const slug = state.currentSubject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                path = `/grile/${slug}`;
+            }
 
-        if (typeof gtag === 'function') {
-            const cleanPath = '/' + id.replace('scr-', '');
-            gtag('event', 'page_view', { page_path: cleanPath, page_title: cleanPath.toUpperCase().replace('/', '') });
+            history.pushState({ pageId: id, subject: state.currentSubject }, '', path);
         }
     }
+    
+    // Update vizual butoane nav (codul tău existent)
+    const btns = { 'scr-home': 'nav-btn-home', 'scr-lobby': 'nav-btn-grile', 'scr-stats': 'nav-btn-stats' };
+    Object.keys(btns).forEach(key => {
+        const btn = document.getElementById(btns[key]);
+        if (btn) {
+            const isActive = (id === key || (key === 'scr-lobby' && (id === 'scr-filter' || id === 'scr-quiz')));
+            btn.classList.toggle('bg-white', isActive);
+            btn.classList.toggle('dark:bg-slate-900', isActive);
+            btn.classList.toggle('text-academia-navy', isActive);
+            btn.classList.toggle('dark:text-white', isActive);
+        }
+    });
+}
+
+
+
+window.onpopstate = function(event) {
+    if (event.state && event.state.pageId) {
+        if (event.state.subject) state.currentSubject = event.state.subject;
+        navigateTo(event.state.pageId, true);
+    } else {
+        handleInitialRouting();
+    }
+};
+
+function handleInitialRouting() {
+    const path = window.location.pathname;
+    
+    if (path === '/statistici') return navigateTo('scr-stats', true);
+    if (path === '/grile') return navigateTo('scr-lobby', true);
+    if (path === '/simulare') return navigateTo('scr-quiz', true);
+    
+    // Logica pentru /grile/limba-romana
+    if (path.startsWith('/grile/')) {
+        const subjectPath = path.replace('/grile/', '');
+        const subjectMap = { 'limba-romana': 'Limba română', 'economie': 'Economie', 'logica': 'Logică' };
+        const realSubject = subjectMap[subjectPath];
+        
+        if (realSubject && db[realSubject]) {
+            state.currentSubject = realSubject;
+            return openFilter(realSubject);
+        }
+    }
+    
+    navigateTo('scr-home', true);
+}
+
 
     function toggleProfileMenu() {
         const menu = document.getElementById('profile-menu'); menu.classList.toggle('hidden');
@@ -1015,7 +1076,7 @@
                 db = JSON.parse(cachedData);
                 renderLobby();
                 document.getElementById('scr-loading').classList.add('hidden'); 
-                navigateTo('scr-home'); 
+                handleInitialRouting(); 
             } else {
                 document.getElementById('scr-loading').classList.remove('hidden');
             }
@@ -1028,7 +1089,7 @@
                     const freshDb = processRawData(data);
                     localStorage.setItem('grile_db_premium', JSON.stringify(freshDb));
                     if (!cachedData) {
-                        db = freshDb; renderLobby(); document.getElementById('scr-loading').classList.add('hidden'); navigateTo('scr-home');
+                        db = freshDb; renderLobby(); document.getElementById('scr-loading').classList.add('hidden'); handleInitialRouting()
                     }
                 });
         } catch(e) {
