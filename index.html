@@ -237,7 +237,7 @@
                     <h2 id="filter-title" class="text-3xl font-black text-center mb-8 text-academia-navy dark:text-white"></h2>
                     <button id="btn-start-all" onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">REZOLVĂ TOATE GRILELE</button>
                     <div id="filter-list" class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scroll"></div>
-                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer hover:shadow-lg transition-all active-scale">ÎNCEPE REZOLVAREA &rarr;</button>
+                    <button id="btn-start-sel" onclick="startFilteredQuiz('SELECTED')" class="w-full py-5 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer hover:shadow-lg transition-all active-scale">ALEGE CAPITOLUL DORIT</button>
                 </div>
             </div>
 
@@ -355,7 +355,7 @@
     let supabaseClient;
     let currentUser = null;        
     let db = {};
-    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 , qStartTime: 0};
+    let state = { list: [], idx: 0, step: 'select', selectedVal: null, selectedEl: null, currentMode: null, currentSubject: null, corecte: [], gresite: [], rawProgress: [], streak: 0 , qStartTime: 0, guestCount: 0};
 
     let examState = {
         isActive: false,
@@ -506,8 +506,8 @@
                             <div class="w-16 h-16 bg-academia-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <svg class="w-8 h-8 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                             </div>
-                            <h2 class="text-2xl font-black text-academia-navy dark:text-white mb-4">Evoluția ta merită salvată</h2>
-                            <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Creează un cont pentru a debloca Scorurile Predictive, Analiza Timpului de Reacție și Harta Vulnerabilităților.</p>
+                            <h2 class="text-2xl font-black text-academia-navy dark:text-white mb-4">Salvează-ți progresul</h2>
+                            <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Creează un cont pentru a debloca statisticile personalte calculate automat.</p>
                             <button onclick="showAuthModal()" class="w-full py-4 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">CREEAZĂ CONT &rarr;</button>
                         </div>
                     </div>`;
@@ -787,9 +787,14 @@
     }
 
     function toggleSubcaps(capId, isChecked) {
-        const container = document.getElementById(capId + '_wrap');
-        if(container) container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
+    const container = document.getElementById(capId + '_wrap');
+    if(container) {
+        container.querySelectorAll('input').forEach(cb => cb.checked = isChecked);
+        updateFilterButtonText(); // COD NOU: Actualizăm textul butonului
     }
+}
+
+
 
     function startFilteredQuiz(mode) {
         state.currentMode = mode;
@@ -835,6 +840,7 @@
         btn.disabled = true; btn.innerText = "Trimite Răspunsul"; btn.onclick = submitAnswer;
         btn.className = "w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale shadow-xl";
         
+	
         if (state.currentMode === 'EXAM') {
             document.getElementById('exam-progress-text').innerText = `Grila ${state.idx + 1} din ${state.list.length}`;
             document.getElementById('exam-progress-bar').style.width = `${((state.idx) / state.list.length) * 100}%`;
@@ -926,10 +932,41 @@
         if (!currentUser && state.currentMode !== 'EXAM') { document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează."; document.getElementById('auth-prompt').classList.remove('hidden'); }
         
         state.step = 'validate'; 
+        // Incrementăm contorul pentru vizitatori (doar dacă nu sunt logați)
+        if (!currentUser && state.currentMode !== 'EXAM') {
+            state.guestCount++;
+        }
+
+        state.step = 'validate'; 
         const btn = document.getElementById('btn-action');
-        btn.innerText = "Continuă cu următoarea grilă \u2192"; btn.classList.add('bg-academia-gold', 'text-white');
-        btn.onclick = () => { state.idx++; if (state.idx < state.list.length) { renderQ(); } else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } };
-    }
+        
+        // LOGICĂ HARD-WALL: Verificăm dacă a atins limita de 3 grile
+        if (!currentUser && state.guestCount >= 3 && state.currentMode !== 'EXAM') {
+            btn.innerText = "Creează cont pentru a continua";
+            btn.classList.add('bg-academia-gold', 'text-white');
+            btn.disabled = false; // Ne asigurăm că butonul e activ
+            btn.onclick = () => {
+                const promptMsg = document.getElementById('auth-prompt-msg');
+                if(promptMsg) promptMsg.innerText = "Ai atins limita de 3 grile gratuite. Creează un cont pentru a debloca restul grilelor.";
+                document.getElementById('auth-prompt')?.classList.remove('hidden');
+                showAuthModal();
+            };
+        } else {
+            // Logica normală pentru utilizatori logați sau sub limită
+            btn.innerText = "Continuă cu următoarea grilă \u2192"; 
+            btn.classList.add('bg-academia-gold', 'text-white');
+            btn.onclick = () => { 
+                state.idx++; 
+                if (state.idx < state.list.length) { 
+                    renderQ(); 
+                } else { 
+                    if(state.currentMode === 'EXAM') finishExam(); 
+                    else goBack(); 
+                } 
+            };
+        }
+    } // Aici se închide funcția submitAnswer
+    
 
     function processRawData(data) {
         const formatString = (str, isEcoLog) => {
@@ -1047,8 +1084,22 @@
             } else { html += `<label class="flex items-center p-5 cursor-pointer"><input type="checkbox" class="cap-cb w-6 h-6 accent-academia-gold mr-4" value="${cap}"><span class="font-bold text-lg dark:text-white">${cap}</span></label>`; }
             html += `</div>`; cont.innerHTML += html;
         });
-        navigateTo('scr-filter');
+        const btnSel = document.getElementById('btn-start-sel');
+    if(btnSel) btnSel.innerText = "ALEGE CAPITOLUL DORIT";
+    
+    cont.addEventListener('change', updateFilterButtonText);
+    
+    navigateTo('scr-filter');
     }
+
+	function updateFilterButtonText() {
+    const anyChecked = document.querySelectorAll('.cap-cb:checked, .sub-cb:checked').length > 0;
+    const btn = document.getElementById('btn-start-sel');
+    if (btn) {
+        btn.innerText = anyChecked ? "ÎNCEPE REZOLVAREA →" : "ALEGE CAPITOLUL DORIT";
+    }
+}
+
 
     function finishExam() {
         examState.isActive = false; clearInterval(examState.timer);
