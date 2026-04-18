@@ -467,19 +467,25 @@ const TITLES = {
         if (!silent) {
             let path = '/';
             if (id === 'scr-stats') path = '/statistici';
-            if (id === 'scr-lobby') path = '/grile';
-            if (id === 'scr-quiz') path = '/simulare';
-            if (id === 'scr-filter' && state.currentSubject) {
-                // Generăm un slug curat: /grile/limba-romana
+            else if (id === 'scr-lobby') path = '/grile';
+            else if (id === 'scr-filter' && state.currentSubject) {
                 const slug = state.currentSubject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
                 path = `/grile/${slug}`;
+            }
+            else if (id === 'scr-quiz') {
+                if (state.currentMode === 'EXAM') path = '/simulare';
+                else if (state.currentMode === 'ERRORS') path = '/seif-greseli';
+                else if (state.currentMode === 'GLOBAL_RANDOM') path = '/mix-global';
+                else if (state.currentSubject) {
+                    const slug = state.currentSubject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                    path = `/grile/${slug}/rezolvare`; // Afișează materia curentă în timpul rezolvării
+                }
             }
 
             history.pushState({ pageId: id, subject: state.currentSubject }, '', path);
         }
     }
     
-    // Update vizual butoane nav (codul tău existent)
     const btns = { 'scr-home': 'nav-btn-home', 'scr-lobby': 'nav-btn-grile', 'scr-stats': 'nav-btn-stats' };
     Object.keys(btns).forEach(key => {
         const btn = document.getElementById(btns[key]);
@@ -510,21 +516,24 @@ function handleInitialRouting() {
     if (path === '/statistici') return navigateTo('scr-stats', true);
     if (path === '/grile') return navigateTo('scr-lobby', true);
     if (path === '/simulare') return navigateTo('scr-quiz', true);
+    if (path === '/mix-global' || path === '/seif-greseli') return navigateTo('scr-lobby', true);
     
-    // Logica pentru /grile/limba-romana
+    // Extragem materia din URL-uri de tipul /grile/limba-romana sau /grile/limba-romana/rezolvare
     if (path.startsWith('/grile/')) {
-        const subjectPath = path.replace('/grile/', '');
+        const subjectPath = path.replace('/grile/', '').replace('/rezolvare', '');
         const subjectMap = { 'limba-romana': 'Limba română', 'economie': 'Economie', 'logica': 'Logică' };
         const realSubject = subjectMap[subjectPath];
         
         if (realSubject && db[realSubject]) {
             state.currentSubject = realSubject;
+            // Dacă dă refresh în timpul testului, îl trimitem la selectare capitole pentru a alege din nou
             return openFilter(realSubject);
         }
     }
     
     navigateTo('scr-home', true);
 }
+
 
 
     function toggleProfileMenu() {
@@ -1194,8 +1203,14 @@ function handleInitialRouting() {
     }
 
     window.addEventListener('DOMContentLoaded', init);
-    window.addEventListener('popstate', (e) => { navigateTo('scr-lobby'); });
-    function goBack() { navigateTo('scr-lobby'); }
+    // AM ȘTERS AICI old popstate event listener care bloca aplicația
+    function goBack() { 
+        if (state.currentSubject && state.currentMode !== 'GLOBAL_RANDOM') {
+            openFilter(state.currentSubject);
+        } else {
+            navigateTo('scr-lobby'); 
+        }
+    }
 </script>
 </body>
 </html>
