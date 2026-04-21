@@ -1057,108 +1057,95 @@ if (currentUser && currentUser.created_at) {
 
 
 
-    function submitAnswer() 
-{
-    if (state.step !== 'select') return;
+    function submitAnswer() {
+        if (state.step !== 'select') return;
 
-    const q = state.list[state.idx];
-    const cor = (q.raspuns_corect || "").trim().toUpperCase();
-    const corIdx = ['A','B','C','D'].indexOf(cor); 
-    const allCards = document.querySelectorAll('.opt-card');
-    const corEl = corIdx >= 0 ? allCards[corIdx] : null;
-    
-    let gid = q.id || q.id_grila || ""; const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
-    if (matchGid) gid = gid || matchGid[1];
-    
-    // Feedback Vizual Instantaneu
-    allCards.forEach(c => c.classList.add('opacity-30'));
-    if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
-    if (corEl) corEl.classList.remove('opacity-30');
-    
-    const isCorrect = state.selectedVal === cor;
-    if (state.selectedEl) {
-        state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-        state.selectedEl.classList.add('text-white');
-        const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
-
-        if (isCorrect) {
-            state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
-            state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
-            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
-        } else {
-            state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
-            state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit', duration);
-            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
-        }
-    }
-    
-    if (!isCorrect && corEl) {
-        corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-        corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-        corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
-    }
-    
-    if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
-
-    // ==========================================
-    // SISTEMUL DE BARIERE (GATEKEEPER)
-    // ==========================================
-    state.step = 'validate'; 
-    const btn = document.getElementById('btn-action');
-    btn.disabled = false;
-
-    const isPremium = currentUser?.user_metadata?.is_premium === true;
-
-    // Bariera 1: Utilizator Neautentificat (Vizitator)
-    if (!currentUser && state.currentMode !== 'EXAM') {
-        state.guestCount++;
-        document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează."; 
-        document.getElementById('auth-prompt').classList.remove('hidden'); 
+        const q = state.list[state.idx];
+        const cor = (q.raspuns_corect || "").trim().toUpperCase();
+        const corIdx = ['A','B','C','D'].indexOf(cor); 
+        const allCards = document.querySelectorAll('.opt-card');
+        const corEl = corIdx >= 0 ? allCards[corIdx] : null;
         
-        if (state.guestCount >= 3) {
-            btn.innerText = "Creează cont pentru a continua";
-            btn.classList.add('bg-academia-gold', 'text-white');
-            btn.onclick = () => {
-                const promptMsg = document.getElementById('auth-prompt-msg');
-                if(promptMsg) promptMsg.innerText = "Ai atins limita de 3 grile gratuite. Creează un cont pentru a debloca restul.";
-                document.getElementById('auth-prompt')?.classList.remove('hidden');
-                showAuthModal();
-            };
-            return; // Oprim execuția aici
+        let gid = q.stable_id; // Integrăm ADN-ul digital creat mai sus
+        
+        // Feedback Vizual Instantaneu
+        allCards.forEach(c => c.classList.add('opacity-30'));
+        if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
+        if (corEl) corEl.classList.remove('opacity-30');
+        
+        const isCorrect = state.selectedVal === cor;
+        if (state.selectedEl) {
+            state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            state.selectedEl.classList.add('text-white');
+            const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+
+            if (isCorrect) {
+                state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                if (currentUser) saveProgressToCloud(gid, q.computedMaterie || state.currentSubject, 'corect', duration);
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
+            } else {
+                state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
+                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+                if (currentUser) saveProgressToCloud(gid, q.computedMaterie || state.currentSubject, 'gresit', duration);
+                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
+            }
         }
-    }
-
-    // Bariera 2: Utilizator Gratuit (Ziua 2+, Limită 15)
-    if (!isPremium && state.currentMode !== 'EXAM') {
-        // Contorizăm fiecare grilă rezolvată, indiferent de zi, pentru acuratețea datelor
-        solvedCount++;
-        localStorage.setItem('solvedCount', solvedCount);
-
-        // Lovim cu Paywall-ul DOAR dacă NU e prima zi și a atins/depășit limita de 15
-        if (!isFirstDay && solvedCount >= FREE_LIMIT) {
-            btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
-            btn.classList.remove('bg-academia-navy');
-            btn.classList.add('bg-rose-600', 'text-white');
-            btn.onclick = () => triggerPaywall();
-            return; // Oprim execuția aici
+        
+        if (!isCorrect && corEl) {
+            corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+            corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+            corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
         }
-    }
+        
+        if (state.currentMode === 'EXAM') { examState.userAnswers[gid] = state.selectedVal; }
 
-    // Undă Verde: Premium, Prima Zi, sau sub limita de 15
-    btn.innerText = "Continuă cu următoarea grilă \u2192"; 
-    btn.classList.add('bg-academia-gold', 'text-white');
-    btn.onclick = () => { 
-        state.idx++; 
-        if (state.idx < state.list.length) { 
-            renderQ(); 
-        } else { 
-            if(state.currentMode === 'EXAM') finishExam(); 
-            else goBack(); 
-        } 
-    };
-}
+        state.step = 'validate'; 
+        const btn = document.getElementById('btn-action');
+        btn.disabled = false;
+
+        const isPremium = currentUser?.user_metadata?.is_premium === true;
+
+        if (!currentUser && state.currentMode !== 'EXAM') {
+            state.guestCount++;
+            document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează."; 
+            document.getElementById('auth-prompt').classList.remove('hidden'); 
+            
+            if (state.guestCount >= 3) {
+                btn.innerText = "Creează cont pentru a continua";
+                btn.classList.add('bg-academia-gold', 'text-white');
+                btn.onclick = () => { showAuthModal(); };
+                return;
+            }
+        }
+
+        if (!isPremium && state.currentMode !== 'EXAM') {
+            solvedCount++;
+            localStorage.setItem('solvedCount', solvedCount);
+
+            // ===============================================
+            // MOD DEBUG PENTRU A VEDEA PAYWALL-UL ACUM
+            // Schimbă DEV_MODE_TEST pe "false" când lansezi public
+            // ===============================================
+            const DEV_MODE_TEST = true; 
+
+            if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+                btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
+                btn.classList.remove('bg-academia-navy');
+                btn.classList.add('bg-rose-600', 'text-white');
+                btn.onclick = () => triggerPaywall();
+                return;
+            }
+        }
+
+        btn.innerText = "Continuă cu următoarea grilă \u2192"; 
+        btn.classList.add('bg-academia-gold', 'text-white');
+        btn.onclick = () => { 
+            state.idx++; 
+            if (state.idx < state.list.length) { renderQ(); } 
+            else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } 
+        };
+    }
     
 function triggerPaywall() {
     const paywall = document.getElementById('paywall-overlay');
@@ -1185,7 +1172,7 @@ function openPaymentModal() {
 
 
 
-    function processRawData(data) {
+ function processRawData(data) {
         const formatString = (str, isEcoLog) => {
             if (isEcoLog) return "General"; if (!str) return "General";
             let cleaned = String(str).trim(); if (!cleaned || cleaned.toLowerCase() === "general") return "General";
@@ -1202,15 +1189,22 @@ function openPaymentModal() {
             let cap = String(item.capitol || item.CAPITOL || item.Capitol || "").trim();
             let sub = String(item.subcapitol || item.SUBCAPITOL || item.Subcapitol || item.sub || "").trim();
 
-            if (cap.toLowerCase().includes("gramatică") || cap.toLowerCase().includes("gramatica")) cap = "Gramatică";
+            if (cap.toLowerCase().includes("gramatică")) cap = "Gramatică";
             if (cap.toLowerCase().includes("ortografie") || cap.toLowerCase().includes("ortoepie") || cap.toLowerCase().includes("lexico-semantice")) { cap = "Ortografie, ortoepie și punctuație"; }
-            if (sub.toLowerCase().includes("sintaxa frazei") || sub.toLowerCase().includes("enunțul") || sub.toLowerCase().includes("propoziția") || sub.toLowerCase().includes("fraza") || sub.toLowerCase().includes("enuntul") || sub.toLowerCase().includes("propozitia")) { sub = "Enunțul, propoziția și fraza"; }
+            if (sub.toLowerCase().includes("sintaxa frazei") || sub.toLowerCase().includes("enunțul") || sub.toLowerCase().includes("propoziția") || sub.toLowerCase().includes("fraza")) { sub = "Enunțul, propoziția și fraza"; }
             if (sub.toLowerCase().trim() === cap.toLowerCase().trim()) { sub = "General"; }
 
             item.capitol = formatString(cap, false); item.subcapitol = formatString(sub, isEcoLog); item.computedMaterie = m;
             item.var_a = item.var_a || item.VAR_A || item.a || item.A; item.var_b = item.var_b || item.VAR_B || item.b || item.B;
             item.var_c = item.var_c || item.VAR_C || item.c || item.C; item.var_d = item.var_d || item.VAR_D || item.d || item.D;
             item.raspuns_corect = item.raspuns_corect || item.RASPUNS_CORECT || item.raspuns || item.Raspuns || item.Corect || item.CORECT;
+
+            // ===============================================
+            // FIX CRITIC: GENERATOR DE ID-URI INDESTRUCTIBILE
+            // ===============================================
+            let fallbackHash = 0; const txt = String(enunt);
+            for (let i = 0; i < txt.length; i++) { fallbackHash = ((fallbackHash << 5) - fallbackHash) + txt.charCodeAt(i); fallbackHash |= 0; }
+            item.stable_id = item.id || item.id_grila || ("G_" + Math.abs(fallbackHash));
 
             if (!acc[m]) acc[m] = []; acc[m].push(item); return acc;
         }, {});
