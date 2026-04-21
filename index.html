@@ -10,7 +10,7 @@
     <meta name="robots" content="index, follow">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://domeniul-tau.ro/">
+    <meta property="og:url" content="https://grileadmiteredrept.vercel.app/">
     <meta property="og:title" content="Grile Admitere Drept">
     <meta property="og:description" content="Grile de examen și simulări. Mod de noapte, salvarea greșelilor și timer inclus.">
     <meta property="og:image" content="https://grileadmiteredrept.vercel.app/"> 
@@ -19,9 +19,9 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "Simulator Grile Admitere Drept",
-      "url": "https://domeniul-tau.ro/",
-      "description": "Simulator online pentru examenul de admitere la Facultatea de Drept. Include grile de Limba Română, Economie și Logică.",
+      "name": "Grile Admitere Drept",
+      "url": "https://grileadmiteredrept.vercel.app/",
+      "description": "Simulator online  pentru examenul de admitere la Facultatea de Drept. Include grile de Limba Română, Economie și Logică.",
       "applicationCategory": "EducationalApplication",
       "offers": {
         "@type": "Offer",
@@ -474,7 +474,7 @@ const TITLES = {
             }
             else if (id === 'scr-quiz') {
                 if (state.currentMode === 'EXAM') path = '/simulare';
-                else if (state.currentMode === 'ERRORS') path = '/seif-greseli';
+                else if (state.currentMode === 'ERRORS') path = '/revizuire-greseli';
                 else if (state.currentMode === 'GLOBAL_RANDOM') path = '/mix-global';
                 else if (state.currentSubject) {
                     const slug = state.currentSubject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
@@ -516,7 +516,7 @@ function handleInitialRouting() {
     if (path === '/statistici') return navigateTo('scr-stats', true);
     if (path === '/grile') return navigateTo('scr-lobby', true);
     if (path === '/simulare') return navigateTo('scr-quiz', true);
-    if (path === '/mix-global' || path === '/seif-greseli') return navigateTo('scr-lobby', true);
+    if (path === '/mix-global' || path === '/revizuire-greseli') return navigateTo('scr-lobby', true);
     
     // Extragem materia din URL-uri de tipul /grile/limba-romana sau /grile/limba-romana/rezolvare
     if (path.startsWith('/grile/')) {
@@ -863,7 +863,21 @@ function handleInitialRouting() {
         updateFilterButtonText(); // COD NOU: Actualizăm textul butonului
     }
 }
+function openPaymentModal() {
+    if (!currentUser) return;
+    
+    // Înlocuiește cu Payment Link-ul tău real de la Stripe
+    const stripePaymentLink = "https://buy.stripe.com/test_6oUfZad6uf8D8XGbFTc3m00";
+    
+    // Atașăm identitatea utilizatorului (CRITIC pentru securitate și deblocare)
+    const params = new URLSearchParams({
+        prefilled_email: currentUser.email,
+        client_reference_id: currentUser.id
+    });
 
+    // Executăm redirecționarea către gateway
+    window.location.href = `${stripePaymentLink}?${params.toString()}`;
+}
 
 
     function startFilteredQuiz(mode) {
