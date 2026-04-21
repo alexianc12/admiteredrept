@@ -1048,7 +1048,8 @@ if (lastResetDate !== todayStr) {
 
 const isFirstDay = (firstActiveDate === todayStr);
 
-    function submitAnswer() {
+    function submitAnswer() 
+{
     if (state.step !== 'select') return;
 
     const q = state.list[state.idx];
@@ -1122,18 +1123,17 @@ const isFirstDay = (firstActiveDate === todayStr);
 
     // Bariera 2: Utilizator Gratuit (Ziua 2+, Limită 15)
     if (!isPremium && state.currentMode !== 'EXAM') {
-        // Contorizăm doar dacă NU este în prima zi de utilizare
-        if (!isFirstDay) {
-            solvedCount++;
-            localStorage.setItem('solvedCount', solvedCount);
+        // Contorizăm fiecare grilă rezolvată, indiferent de zi, pentru acuratețea datelor
+        solvedCount++;
+        localStorage.setItem('solvedCount', solvedCount);
 
-            if (solvedCount >= FREE_LIMIT) {
-                btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
-                btn.classList.remove('bg-academia-navy');
-                btn.classList.add('bg-rose-600', 'text-white');
-                btn.onclick = () => triggerPaywall();
-                return; // Oprim execuția aici
-            }
+        // Lovim cu Paywall-ul DOAR dacă NU e prima zi și a atins/depășit limita de 15
+        if (!isFirstDay && solvedCount >= FREE_LIMIT) {
+            btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
+            btn.classList.remove('bg-academia-navy');
+            btn.classList.add('bg-rose-600', 'text-white');
+            btn.onclick = () => triggerPaywall();
+            return; // Oprim execuția aici
         }
     }
 
