@@ -1127,7 +1127,7 @@ if (currentUser && currentUser.created_at) {
             // MOD DEBUG PENTRU A VEDEA PAYWALL-UL ACUM
             // Schimbă DEV_MODE_TEST pe "false" când lansezi public
             // ===============================================
-            const DEV_MODE_TEST = true; 
+            const DEV_MODE_TEST = false; 
 
             if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
                 btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
