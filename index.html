@@ -935,7 +935,7 @@ function openPaymentModal() {
         // GATEKEEPER 1: BLOCAJ LA INTRARE (Anti-Refresh)
         // ==========================================
         const isPremium = currentUser?.user_metadata?.is_premium === true;
-        const DEV_MODE_TEST = true; // Setează pe false în producție
+        const DEV_MODE_TEST = false; // Setează pe false în producție
 
         if (!isPremium && mode !== 'EXAM') {
             if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
@@ -1146,7 +1146,7 @@ if (currentUser && currentUser.created_at) {
             // ==========================================
             // GATEKEEPER 2: BLOCAJ LA CLICK PE NEXT
             // ==========================================
-            const DEV_MODE_TEST = true; // Setează pe false în producție
+            const DEV_MODE_TEST = false; // Setează pe false în producție
             
             if (!isPremium && state.currentMode !== 'EXAM') {
                 if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
