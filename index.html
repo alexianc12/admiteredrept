@@ -97,6 +97,56 @@
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid var(--glass-border); 
         }
+
+
+/* Stilizare Paywall */
+.paywall-hidden {
+    display: none !important;
+}
+
+#paywall-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.9); /* Fundal întunecat (blur) */
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Pus deasupra oricărui alt element */
+}
+
+.paywall-box {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.paywall-box h2 { margin-top: 0; color: #1e293b; }
+.paywall-box p { color: #475569; font-size: 16px; line-height: 1.5; }
+.paywall-benefits { text-align: left; list-style: none; padding: 0; margin: 20px 0; color: #334155; line-height: 1.8; }
+
+.stripe-pay-btn {
+    background: #635bff; /* Culoarea oficială Stripe */
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.stripe-pay-btn:hover { background: #4b45c6; }
+
+
     </style>
 <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -972,7 +1022,30 @@ function openPaymentModal() {
         });
     }
 
-    function submitAnswer() {
+const FREE_LIMIT = 15;
+
+let solvedCount = parseInt(localStorage.getItem('solvedCount')) || 0;
+
+    function submitAnswer()
+ {
+	// Verificăm întâi dacă utilizatorul este premium (Supabase injectează asta în metadata)
+    // Dacă e premium, oprim complet sistemul de blocare.
+    const isPremium = currentUser?.user_metadata?.is_premium === true;
+    
+    if (!isPremium) {
+        // Dacă nu e premium, creștem numărătorul
+        solvedCount++;
+        
+        // Salvăm în memorie ca să nu trișeze cu Refresh
+        localStorage.setItem('solvedCount', solvedCount);
+        
+        // Verificăm dacă a atins zidul
+        if (solvedCount >= FREE_LIMIT) {
+            triggerPaywall();
+            return; // OPRIM restul codului (nu îi mai dăm grile)
+        }
+    }
+
         if (state.step !== 'select') return;
         const q = state.list[state.idx];
         const cor = (q.raspuns_corect || "").trim().toUpperCase();
@@ -1051,6 +1124,27 @@ function openPaymentModal() {
         }
     } // Aici se închide funcția submitAnswer
     
+function triggerPaywall() {
+    const paywall = document.getElementById('paywall-overlay');
+    paywall.classList.remove('paywall-hidden');
+    
+    // Opțional: Oprim scroll-ul paginii pentru a forța decizia
+    document.body.style.overflow = 'hidden'; 
+}
+
+
+function openPaymentModal() {
+    if (!currentUser) return alert("Eroare: Trebuie să fii autentificat.");
+    
+    const stripePaymentLink = "https://buy.stripe.com/LINK_UL_TAU";
+    const params = new URLSearchParams({
+        prefilled_email: currentUser.email,
+        client_reference_id: currentUser.id
+    });
+    window.location.href = `${stripePaymentLink}?${params.toString()}`;
+}
+
+
 
     function processRawData(data) {
         const formatString = (str, isEcoLog) => {
@@ -1226,5 +1320,21 @@ function openPaymentModal() {
         }
     }
 </script>
+
+<div id="paywall-overlay" class="paywall-hidden">
+    <div class="paywall-box">
+        <h2>Ai atins limita gratuită 🛑</h2>
+        <p>Ai rezolvat cele 15 grile demonstrative. Pentru a debloca accesul nelimitat la toate grilele și statisticile de performanță, upgradează la contul Premium.</p>
+        <ul class="paywall-benefits">
+            <li>✅ Acces nelimitat la mii de grile</li>
+            <li>✅ Simulări de examen în timp real</li>
+        </ul>
+        <button class="stripe-pay-btn" onclick="openPaymentModal()">
+            Deblochează Premium (30 RON/lună)
+        </button>
+    </div>
+</div>
+
+
 </body>
 </html>
