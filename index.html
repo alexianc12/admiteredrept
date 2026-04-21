@@ -1204,7 +1204,9 @@ function openPaymentModal() {
             // ===============================================
             let fallbackHash = 0; const txt = String(enunt);
             for (let i = 0; i < txt.length; i++) { fallbackHash = ((fallbackHash << 5) - fallbackHash) + txt.charCodeAt(i); fallbackHash |= 0; }
-            item.stable_id = item.id || item.id_grila || ("G_" + Math.abs(fallbackHash));
+            
+            // Forțăm Hash-ul unic, ignorând orice ID din Google Sheets care ar putea crea coliziuni
+            item.stable_id = "G_" + Math.abs(fallbackHash);
 
             if (!acc[m]) acc[m] = []; acc[m].push(item); return acc;
         }, {});
