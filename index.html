@@ -931,6 +931,19 @@ function openPaymentModal() {
 
 
     function startFilteredQuiz(mode) {
+        // ==========================================
+        // GATEKEEPER 1: BLOCAJ LA INTRARE (Anti-Refresh)
+        // ==========================================
+        const isPremium = currentUser?.user_metadata?.is_premium === true;
+        const DEV_MODE_TEST = true; // Setează pe false în producție
+
+        if (!isPremium && mode !== 'EXAM') {
+            if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+                triggerPaywall();
+                return; // Oprește încărcarea grilelor, afișează Paywall instantaneu
+            }
+        }
+
         state.currentMode = mode;
         let pool = [];
         if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') { pool = [].concat(...Object.values(db)); } 
@@ -958,6 +971,8 @@ function openPaymentModal() {
         
         navigateTo('scr-quiz'); renderQ();
     }
+
+
 
     function renderQ() {
         state.qStartTime = Date.now();
@@ -1066,9 +1081,8 @@ if (currentUser && currentUser.created_at) {
         const allCards = document.querySelectorAll('.opt-card');
         const corEl = corIdx >= 0 ? allCards[corIdx] : null;
         
-        let gid = q.stable_id; // Integrăm ADN-ul digital creat mai sus
+        let gid = q.stable_id; 
         
-        // Feedback Vizual Instantaneu
         allCards.forEach(c => c.classList.add('opacity-30'));
         if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
         if (corEl) corEl.classList.remove('opacity-30');
@@ -1119,34 +1133,36 @@ if (currentUser && currentUser.created_at) {
             }
         }
 
+        // Incrementăm contorul în fundal
         if (!isPremium && state.currentMode !== 'EXAM') {
             solvedCount++;
             localStorage.setItem('solvedCount', solvedCount);
-
-            // ===============================================
-            // MOD DEBUG PENTRU A VEDEA PAYWALL-UL ACUM
-            // Schimbă DEV_MODE_TEST pe "false" când lansezi public
-            // ===============================================
-            const DEV_MODE_TEST = false; 
-
-            if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
-                btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
-                btn.classList.remove('bg-academia-navy');
-                btn.classList.add('bg-rose-600', 'text-white');
-                btn.onclick = () => triggerPaywall();
-                return;
-            }
         }
 
         btn.innerText = "Continuă cu următoarea grilă \u2192"; 
         btn.classList.add('bg-academia-gold', 'text-white');
         btn.onclick = () => { 
+            
+            // ==========================================
+            // GATEKEEPER 2: BLOCAJ LA CLICK PE NEXT
+            // ==========================================
+            const DEV_MODE_TEST = true; // Setează pe false în producție
+            
+            if (!isPremium && state.currentMode !== 'EXAM') {
+                if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+                    triggerPaywall();
+                    return; // Îngheață ecranul, nu mai trece la următoarea
+                }
+            }
+
             state.idx++; 
             if (state.idx < state.list.length) { renderQ(); } 
             else { if(state.currentMode === 'EXAM') finishExam(); else goBack(); } 
         };
     }
-    
+
+
+
 function triggerPaywall() {
     const paywall = document.getElementById('paywall-overlay');
     paywall.classList.remove('paywall-hidden');
