@@ -1023,30 +1023,39 @@ function openPaymentModal() {
     }
 
 // ==========================================
-// ARHITECTURĂ PAYWALL: TIMP ȘI LIMITE
+// ARHITECTURĂ PAYWALL: TIMP ȘI BAZĂ DE DATE
 // ==========================================
 const FREE_LIMIT = 15;
 const todayStr = new Date().toLocaleDateString('ro-RO');
 
-// 1. Definim Prima Zi (Fereastra Nelimitată)
-let firstActiveDate = localStorage.getItem('firstActiveDate');
-if (!firstActiveDate) {
-    firstActiveDate = todayStr;
-    localStorage.setItem('firstActiveDate', todayStr);
-}
-
-// 2. Gestionăm contorul zilnic
+// Gestionarea contorului zilnic (Resetare la miezul nopții)
 let lastResetDate = localStorage.getItem('lastResetDate');
 let solvedCount = parseInt(localStorage.getItem('solvedCount')) || 0;
 
-// Resetăm contorul la trecerea de miezul nopții
 if (lastResetDate !== todayStr) {
     solvedCount = 0;
     localStorage.setItem('solvedCount', 0);
     localStorage.setItem('lastResetDate', todayStr);
 }
 
-const isFirstDay = (firstActiveDate === todayStr);
+// Determinarea exactă a "Primei Zile" (Sursa de adevăr: Supabase)
+let isFirstDay = false;
+
+if (currentUser && currentUser.created_at) {
+    // Dacă e logat, extragem data creării contului din baza de date
+    const accountCreationDate = new Date(currentUser.created_at).toLocaleDateString('ro-RO');
+    isFirstDay = (accountCreationDate === todayStr);
+} else {
+    // Dacă e doar vizitator nelogat, folosim localStorage ca fallback
+    let firstActiveDate = localStorage.getItem('firstActiveDate');
+    if (!firstActiveDate) {
+        firstActiveDate = todayStr;
+        localStorage.setItem('firstActiveDate', todayStr);
+    }
+    isFirstDay = (firstActiveDate === todayStr);
+}
+
+
 
     function submitAnswer() 
 {
