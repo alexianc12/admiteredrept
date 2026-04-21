@@ -1022,107 +1022,134 @@ function openPaymentModal() {
         });
     }
 
+// ==========================================
+// ARHITECTURĂ PAYWALL: TIMP ȘI LIMITE
+// ==========================================
 const FREE_LIMIT = 15;
+const todayStr = new Date().toLocaleDateString('ro-RO');
 
+// 1. Definim Prima Zi (Fereastra Nelimitată)
+let firstActiveDate = localStorage.getItem('firstActiveDate');
+if (!firstActiveDate) {
+    firstActiveDate = todayStr;
+    localStorage.setItem('firstActiveDate', todayStr);
+}
+
+// 2. Gestionăm contorul zilnic
+let lastResetDate = localStorage.getItem('lastResetDate');
 let solvedCount = parseInt(localStorage.getItem('solvedCount')) || 0;
 
-    function submitAnswer()
- {
-	// Verificăm întâi dacă utilizatorul este premium (Supabase injectează asta în metadata)
-    // Dacă e premium, oprim complet sistemul de blocare.
-    const isPremium = currentUser?.user_metadata?.is_premium === true;
+// Resetăm contorul la trecerea de miezul nopții
+if (lastResetDate !== todayStr) {
+    solvedCount = 0;
+    localStorage.setItem('solvedCount', 0);
+    localStorage.setItem('lastResetDate', todayStr);
+}
+
+const isFirstDay = (firstActiveDate === todayStr);
+
+    function submitAnswer() {
+    if (state.step !== 'select') return;
+
+    const q = state.list[state.idx];
+    const cor = (q.raspuns_corect || "").trim().toUpperCase();
+    const corIdx = ['A','B','C','D'].indexOf(cor); 
+    const allCards = document.querySelectorAll('.opt-card');
+    const corEl = corIdx >= 0 ? allCards[corIdx] : null;
     
-    if (!isPremium) {
-        // Dacă nu e premium, creștem numărătorul
-        solvedCount++;
-        
-        // Salvăm în memorie ca să nu trișeze cu Refresh
-        localStorage.setItem('solvedCount', solvedCount);
-        
-        // Verificăm dacă a atins zidul
-        if (solvedCount >= FREE_LIMIT) {
-            triggerPaywall();
-            return; // OPRIM restul codului (nu îi mai dăm grile)
+    let gid = q.id || q.id_grila || ""; const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
+    if (matchGid) gid = gid || matchGid[1];
+    
+    // Feedback Vizual Instantaneu
+    allCards.forEach(c => c.classList.add('opacity-30'));
+    if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
+    if (corEl) corEl.classList.remove('opacity-30');
+    
+    const isCorrect = state.selectedVal === cor;
+    if (state.selectedEl) {
+        state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+        state.selectedEl.classList.add('text-white');
+        const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+
+        if (isCorrect) {
+            state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
+            state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
+            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
+        } else {
+            state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
+            state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
+            if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit', duration);
+            try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
         }
     }
+    
+    if (!isCorrect && corEl) {
+        corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
+        corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+        corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
+    }
+    
+    if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
 
-        if (state.step !== 'select') return;
-        const q = state.list[state.idx];
-        const cor = (q.raspuns_corect || "").trim().toUpperCase();
-        const corIdx = ['A','B','C','D'].indexOf(cor); 
-        const allCards = document.querySelectorAll('.opt-card');
-        const corEl = corIdx >= 0 ? allCards[corIdx] : null;
-        
-        let gid = q.id || q.id_grila || ""; const matchGid = (q.enunt || "").match(/^\s*(\d+)[\.\-\)]\s+/);
-        if (matchGid) gid = gid || matchGid[1];
-        
-        allCards.forEach(c => c.classList.add('opacity-30'));
-        if (state.selectedEl) state.selectedEl.classList.remove('opacity-30');
-        if (corEl) corEl.classList.remove('opacity-30');
-        
-        const isCorrect = state.selectedVal === cor;
-        if (state.selectedEl) {
-            state.selectedEl.classList.remove('bg-white', 'bg-academia-goldL', 'border-slate-100', 'border-academia-gold', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-            state.selectedEl.classList.add('text-white');
-            const duration = Math.floor((Date.now() - state.qStartTime) / 1000);
+    // ==========================================
+    // SISTEMUL DE BARIERE (GATEKEEPER)
+    // ==========================================
+    state.step = 'validate'; 
+    const btn = document.getElementById('btn-action');
+    btn.disabled = false;
 
-            if (isCorrect) {
-                state.selectedEl.classList.add('bg-emerald-500', 'border-emerald-500');
-                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'corect', duration);
-                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'corect', id_grila: gid }); } catch(e){}
-            } else {
-                state.selectedEl.classList.add('bg-rose-500', 'border-rose-500');
-                state.selectedEl.querySelectorAll('span').forEach(s => s.classList.add('text-white', 'border-white'));
-                if (currentUser) saveProgressToCloud(q.id || state.idx, q.computedMaterie || state.currentSubject, 'gresit', duration);
-                try { posthog.capture('grila_rezolvata', { materie: q.computedMaterie, capitol: q.capitol, subcapitol: q.subcapitol, status: 'gresit', id_grila: gid }); } catch(e){}
-            }
-        }
-        
-        if (!isCorrect && corEl) {
-            corEl.classList.remove('bg-white', 'border-slate-100', 'glass-card', 'dark:bg-slate-800', 'dark:border-slate-700', 'dark:bg-slate-900');
-            corEl.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-            corEl.querySelectorAll('span').forEach(s => { s.classList.remove('text-slate-400', 'dark:text-slate-400', 'border-slate-200', 'dark:border-slate-600'); s.classList.add('text-white', 'border-white'); });
-        }
-        
-        if (state.currentMode === 'EXAM') { examState.userAnswers[gid || state.idx] = state.selectedVal; }
-        if (!currentUser && state.currentMode !== 'EXAM') { document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează."; document.getElementById('auth-prompt').classList.remove('hidden'); }
-        
-        state.step = 'validate'; 
-        // Incrementăm contorul pentru vizitatori (doar dacă nu sunt logați)
-        if (!currentUser && state.currentMode !== 'EXAM') {
-            state.guestCount++;
-        }
+    const isPremium = currentUser?.user_metadata?.is_premium === true;
 
-        state.step = 'validate'; 
-        const btn = document.getElementById('btn-action');
+    // Bariera 1: Utilizator Neautentificat (Vizitator)
+    if (!currentUser && state.currentMode !== 'EXAM') {
+        state.guestCount++;
+        document.getElementById('auth-prompt-msg').innerText = "Atenție: Progresul tău nu se salvează."; 
+        document.getElementById('auth-prompt').classList.remove('hidden'); 
         
-        // LOGICĂ HARD-WALL: Verificăm dacă a atins limita de 3 grile
-        if (!currentUser && state.guestCount >= 3 && state.currentMode !== 'EXAM') {
+        if (state.guestCount >= 3) {
             btn.innerText = "Creează cont pentru a continua";
             btn.classList.add('bg-academia-gold', 'text-white');
-            btn.disabled = false; // Ne asigurăm că butonul e activ
             btn.onclick = () => {
                 const promptMsg = document.getElementById('auth-prompt-msg');
-                if(promptMsg) promptMsg.innerText = "Ai atins limita de 3 grile gratuite. Creează un cont pentru a debloca restul grilelor.";
+                if(promptMsg) promptMsg.innerText = "Ai atins limita de 3 grile gratuite. Creează un cont pentru a debloca restul.";
                 document.getElementById('auth-prompt')?.classList.remove('hidden');
                 showAuthModal();
             };
-        } else {
-            // Logica normală pentru utilizatori logați sau sub limită
-            btn.innerText = "Continuă cu următoarea grilă \u2192"; 
-            btn.classList.add('bg-academia-gold', 'text-white');
-            btn.onclick = () => { 
-                state.idx++; 
-                if (state.idx < state.list.length) { 
-                    renderQ(); 
-                } else { 
-                    if(state.currentMode === 'EXAM') finishExam(); 
-                    else goBack(); 
-                } 
-            };
+            return; // Oprim execuția aici
         }
-    } // Aici se închide funcția submitAnswer
+    }
+
+    // Bariera 2: Utilizator Gratuit (Ziua 2+, Limită 15)
+    if (!isPremium && state.currentMode !== 'EXAM') {
+        // Contorizăm doar dacă NU este în prima zi de utilizare
+        if (!isFirstDay) {
+            solvedCount++;
+            localStorage.setItem('solvedCount', solvedCount);
+
+            if (solvedCount >= FREE_LIMIT) {
+                btn.innerText = "Limita zilnică atinsă - Deblochează Premium";
+                btn.classList.remove('bg-academia-navy');
+                btn.classList.add('bg-rose-600', 'text-white');
+                btn.onclick = () => triggerPaywall();
+                return; // Oprim execuția aici
+            }
+        }
+    }
+
+    // Undă Verde: Premium, Prima Zi, sau sub limita de 15
+    btn.innerText = "Continuă cu următoarea grilă \u2192"; 
+    btn.classList.add('bg-academia-gold', 'text-white');
+    btn.onclick = () => { 
+        state.idx++; 
+        if (state.idx < state.list.length) { 
+            renderQ(); 
+        } else { 
+            if(state.currentMode === 'EXAM') finishExam(); 
+            else goBack(); 
+        } 
+    };
+}
     
 function triggerPaywall() {
     const paywall = document.getElementById('paywall-overlay');
@@ -1131,6 +1158,9 @@ function triggerPaywall() {
     // Opțional: Oprim scroll-ul paginii pentru a forța decizia
     document.body.style.overflow = 'hidden'; 
 }
+
+
+
 
 
 function openPaymentModal() {
