@@ -930,24 +930,27 @@ function openPaymentModal() {
 }
 
 
-    function startFilteredQuiz(mode) {
+   function startFilteredQuiz(mode) {
         // ==========================================
         // GATEKEEPER 1: BLOCAJ LA INTRARE (Anti-Refresh)
         // ==========================================
         const isPremium = currentUser?.user_metadata?.is_premium === true;
-        const DEV_MODE_TEST = false; // Setează pe false în producție
+        const DEV_MODE_TEST = false; 
 
         if (!isPremium && mode !== 'EXAM') {
-            if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+            if ((!isInGracePeriod || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
                 triggerPaywall();
-                return; // Oprește încărcarea grilelor, afișează Paywall instantaneu
+                return; // Oprește executarea testului
             }
         }
 
         state.currentMode = mode;
         let pool = [];
-        if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') { pool = [].concat(...Object.values(db)); } 
-        else { pool = db[state.currentSubject] || []; }
+        if (mode === 'GLOBAL_RANDOM' || mode === 'ERRORS') { 
+            pool = [].concat(...Object.values(db)); 
+        } else { 
+            pool = db[state.currentSubject] || []; 
+        }
         
         if (mode === 'SELECTED') {
             const selCaps = Array.from(document.querySelectorAll('.cap-cb:checked')).map(c => c.value);
@@ -957,8 +960,7 @@ function openPaymentModal() {
 
         const originalPool = [...pool];
         pool = pool.filter(q => {
-            let gid = q.id || q.id_grila || ""; const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/);
-            if (m) gid = gid || m[1]; gid = String(gid);
+            let gid = q.stable_id;
             if (mode === 'ERRORS') return state.gresite.includes(gid);
             return !state.corecte.includes(gid) && !state.gresite.includes(gid); 
         });
@@ -966,10 +968,12 @@ function openPaymentModal() {
         if (!pool.length && originalPool.length > 0) { pool = originalPool; }
         if (!pool.length) return;
         
-        state.list = pool.sort(() => Math.random() - 0.5); state.idx = 0;
+        state.list = pool.sort(() => Math.random() - 0.5); 
+        state.idx = 0;
         try { posthog.capture('quiz_start', { modul: mode, subiect: state.currentSubject, numar_grile: pool.length }); } catch(e){}
         
-        navigateTo('scr-quiz'); renderQ();
+        navigateTo('scr-quiz'); 
+        renderQ();
     }
 
 
@@ -1038,39 +1042,35 @@ function openPaymentModal() {
     }
 
 // ==========================================
-// ARHITECTURĂ PAYWALL: TIMP ȘI BAZĂ DE DATE
+// ARHITECTURĂ PAYWALL V3: 3 ZILE ACTIVE, 10 GRILE/ZI
 // ==========================================
-const FREE_LIMIT = 15;
-const todayStr = new Date().toLocaleDateString('ro-RO');
+const FREE_LIMIT = 10;
+const GRACE_DAYS_LIMIT = 3;
+const todayISO = new Date().toISOString().split('T')[0];
 
-// Gestionarea contorului zilnic (Resetare la miezul nopții)
+// 1. Resetare Zilnică a contorului de grile
 let lastResetDate = localStorage.getItem('lastResetDate');
 let solvedCount = parseInt(localStorage.getItem('solvedCount')) || 0;
 
-if (lastResetDate !== todayStr) {
+if (lastResetDate !== todayISO) {
     solvedCount = 0;
     localStorage.setItem('solvedCount', 0);
-    localStorage.setItem('lastResetDate', todayStr);
+    localStorage.setItem('lastResetDate', todayISO);
 }
 
-// Determinarea exactă a "Primei Zile" (Sursa de adevăr: Supabase)
-let isFirstDay = false;
+// 2. Tracker Strict pentru Zile Active
+let activeDays = JSON.parse(localStorage.getItem('activeDaysArray')) || [];
 
-if (currentUser && currentUser.created_at) {
-    // Dacă e logat, extragem data creării contului din baza de date
-    const accountCreationDate = new Date(currentUser.created_at).toLocaleDateString('ro-RO');
-    isFirstDay = (accountCreationDate === todayStr);
-} else {
-    // Dacă e doar vizitator nelogat, folosim localStorage ca fallback
-    let firstActiveDate = localStorage.getItem('firstActiveDate');
-    if (!firstActiveDate) {
-        firstActiveDate = todayStr;
-        localStorage.setItem('firstActiveDate', todayStr);
+// Funcție de evaluare impenetrabilă: Ziua curentă e în primele 3 poziții?
+function checkGraceStatus() {
+    if (activeDays.includes(todayISO)) {
+        return activeDays.indexOf(todayISO) < GRACE_DAYS_LIMIT;
+    } else {
+        return activeDays.length < GRACE_DAYS_LIMIT;
     }
-    isFirstDay = (firstActiveDate === todayStr);
 }
 
-
+let isInGracePeriod = checkGraceStatus();
 
     function submitAnswer() {
         if (state.step !== 'select') return;
@@ -1133,8 +1133,17 @@ if (currentUser && currentUser.created_at) {
             }
         }
 
-        // Incrementăm contorul în fundal
+        // ==========================================
+        // TELEMETRIE ȘI CONTORIZARE PAYWALL
+        // ==========================================
         if (!isPremium && state.currentMode !== 'EXAM') {
+            // TRIGGER: Adăugăm ziua ca fiind consumată DOAR dacă nu a mai fost adăugată
+            if (!activeDays.includes(todayISO)) {
+                activeDays.push(todayISO);
+                localStorage.setItem('activeDaysArray', JSON.stringify(activeDays));
+                isInGracePeriod = checkGraceStatus(); // Re-evaluăm statusul cu noua funcție blindată
+            }
+
             solvedCount++;
             localStorage.setItem('solvedCount', solvedCount);
         }
@@ -1146,12 +1155,12 @@ if (currentUser && currentUser.created_at) {
             // ==========================================
             // GATEKEEPER 2: BLOCAJ LA CLICK PE NEXT
             // ==========================================
-            const DEV_MODE_TEST = false; // Setează pe false în producție
+            const DEV_MODE_TEST = false; 
             
             if (!isPremium && state.currentMode !== 'EXAM') {
-                if ((!isFirstDay || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+                if ((!isInGracePeriod || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
                     triggerPaywall();
-                    return; // Îngheață ecranul, nu mai trece la următoarea
+                    return; // Îngheață complet ecranul aici
                 }
             }
 
