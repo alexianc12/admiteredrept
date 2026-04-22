@@ -31,6 +31,11 @@
     }
     </script>
 
+
+
+
+
+
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group reset groups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
        posthog.init('phc_wnkPhxa5oCax7Ua4EBRvjHFVvVo7M54vYTZy4fKYQKNu', {
@@ -202,87 +207,70 @@
 
     <main class="pt-24 pb-8 px-4 flex justify-center">
         <div class="w-full max-w-5xl">
+
             <div id="scr-error" class="hidden text-center py-20 glass-card dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded-[32px] shadow-lg max-w-2xl mx-auto transition-colors duration-300">
                 <h2 class="text-2xl font-bold text-rose-600 mb-2">Eroare Sistem</h2>
                 <p id="error-details" class="text-slate-600 dark:text-slate-300 px-8 mb-6 font-medium"></p>
                 <button onclick="window.location.reload()" class="px-8 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl font-bold text-sm border-none cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Reîncearcă</button>
             </div>
-<div id="scr-home" class="hidden mt-12 w-full">
-    <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 py-10">
-        
-        <div class="w-full lg:w-1/2 text-center lg:text-left">
-            
-            <h1 class="text-4xl md:text-6xl font-black text-academia-navy dark:text-white mb-8 tracking-tight leading-tight">
-                Pregătește-te eficient pentru Admiterea la Drept            </h1>
-            
-            <div id="home-buttons-container" class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
-                <button onclick="navigateTo('scr-lobby')" class="px-10 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl border-none cursor-pointer hover:shadow-2xl transition-all active-scale shadow-lg">
-                    Începe rezolvarea &rarr;
-                </button>
-                            </div>
-        </div>
 
-        <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            <div class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                </div>
-                <h3 class="font-black text-academia-navy dark:text-white mb-2">Grile Structurate</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Mii de întrebări organizate logic pe capitole și subcapitole conform tematicii UB.</p>
-            </div>
-
-            <div class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <h3 class="font-black text-academia-navy dark:text-white mb-2">Mod Examen</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Simulări de examen cu timer și alocare oficială a numărului de grile pe materie.</p>
-            </div>
-
-            <div class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                </div>
-                <h3 class="font-black text-academia-navy dark:text-white mb-2">Progres Real</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Dashboard de date updatat automat.</p>
-            </div>
-
-            <div class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-                <h3 class="font-black text-academia-navy dark:text-white mb-2">Revizuire Greșeli </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Fiecare greșeală este salvată automat pentru a putea fi revizuită ulterior.</p>
-            </div>
-
-        </div>
-    </div>
-</div>            <div id="scr-stats" class="hidden mt-10 w-full animate__animated animate__fadeIn">
-                <div id="user-stats-container" class="w-full">
+            <div id="scr-home" class="hidden mt-12 w-full">
+                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 py-10">
+                    <div class="w-full lg:w-1/2 text-center lg:text-left">
+                        <h1 class="text-4xl md:text-6xl font-black text-academia-navy dark:text-white mb-8 tracking-tight leading-tight">Pregătește-te eficient pentru Admiterea la Drept</h1>
+                        <div id="home-buttons-container" class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                            <button onclick="navigateTo('scr-lobby')" class="px-10 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl border-none cursor-pointer hover:shadow-2xl transition-all active-scale shadow-lg">Începe rezolvarea &rarr;</button>
+                        </div>
                     </div>
-            </div>
-            <div id="scr-lobby" class="hidden max-w-2xl mx-auto mt-8 w-full px-2">
-                <button id="btn-global-mix" onclick="startFilteredQuiz('GLOBAL_RANDOM')" class="w-full mb-4 py-5 bg-academia-navy text-academia-gold rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm">
-                    REZOLVĂ TOATE GRILELE
-                </button>
-                <button onclick="openExamConfig()" class="w-full mb-8 py-5 bg-gradient-to-r from-academia-gold to-yellow-600 text-white rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm flex justify-center items-center gap-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    SIMULARE EXAMEN
-                </button>
-                
-                <div id="subject-list" class="grid gap-4 mb-6"></div>
-                
-                <div id="btn-vault" onclick="startFilteredQuiz('ERRORS')" class="hidden mt-6 mx-auto w-max px-6 py-3 glass-card dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-slate-200 dark:border-slate-800 hover:border-rose-200 rounded-full cursor-pointer transition-all active-scale flex items-center justify-center gap-2 group shadow-sm">
-                    <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:text-rose-600 transition-colors">Revizuire: <span id="vault-count" class="text-academia-navy dark:text-academia-gold group-hover:text-rose-600 font-black">0</span> grile greșite</span>
+                    <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div onclick="navigateTo('scr-lobby')" class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer hover:border-academia-gold transition-all active-scale">
+                            <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4"><svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg></div>
+                            <h3 class="font-black text-academia-navy dark:text-white mb-2">Grile Structurate</h3><p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Mii de întrebări organizate logic pe capitole și subcapitole conform tematicii UB.</p>
+                        </div>
+                        <div onclick="openExamConfig()" class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer hover:border-academia-gold transition-all active-scale">
+                            <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4"><svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                            <h3 class="font-black text-academia-navy dark:text-white mb-2">Mod Examen</h3><p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Simulări de examen cu timer și alocare oficială a numărului de grile pe materie.</p>
+                        </div>
+                        <div onclick="navigateTo('scr-stats')" class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer hover:border-academia-gold transition-all active-scale">
+                            <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4"><svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
+                            <h3 class="font-black text-academia-navy dark:text-white mb-2">Progres Real</h3><p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Dashboard de date updatat automat.</p>
+                        </div>
+                        <div onclick="handleHomeRevizuire()" class="glass-card dark:bg-slate-900/50 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer hover:border-academia-gold transition-all active-scale">
+                            <div class="w-10 h-10 bg-academia-gold/10 rounded-xl flex items-center justify-center mb-4"><svg class="w-5 h-5 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                            <h3 class="font-black text-academia-navy dark:text-white mb-2">Revizuire Greșeli</h3><p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Fiecare greșeală este salvată automat pentru a putea fi revizuită ulterior.</p>
+                        </div>
+                    </div>
                 </div>
-                
-                
             </div>
-            
 
-            <div id="scr-filter" class="hidden max-w-3xl mx-auto mt-6">
+            <div id="scr-stats" class="hidden mt-12 flex flex-col items-center w-full">
+                <div class="w-full max-w-4xl text-center">
+                    <div class="flex items-center justify-between mb-10">
+                       
+                    </div>
+                    <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center"></div>
+                    <div id="user-stats-container" class="w-full mt-6"></div>
+                </div>
+            </div>
+
+            <div id="scr-lobby" class="hidden mt-12 flex flex-col items-center w-full">
+                <div class="w-full max-w-2xl">
+                    <button id="btn-global-mix" onclick="startFilteredQuiz('GLOBAL_RANDOM')" class="w-full mb-4 py-5 bg-academia-navy text-academia-gold rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm">
+                        REZOLVĂ TOATE GRILELE
+                    </button>
+                    <button onclick="openExamConfig()" class="w-full mb-8 py-5 bg-gradient-to-r from-academia-gold to-yellow-600 text-white rounded-3xl font-black text-lg md:text-xl hover:shadow-lg transition-all border-none cursor-pointer active-scale shadow-sm flex justify-center items-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        SIMULARE EXAMEN
+                    </button>
+                    <div id="subject-list" class="grid gap-4 mb-6 w-full"></div>
+                    <div id="btn-vault" onclick="startFilteredQuiz('ERRORS')" class="hidden mt-6 mx-auto w-max px-6 py-3 glass-card dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-slate-200 dark:border-slate-800 hover:border-rose-200 rounded-full cursor-pointer transition-all active-scale flex items-center justify-center gap-2 group shadow-sm">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span class="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:text-rose-600 transition-colors">Revizuire: <span id="vault-count" class="text-academia-navy dark:text-academia-gold group-hover:text-rose-600 font-black">0</span> grile greșite</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="scr-filter" class="hidden mt-12 w-full max-w-3xl mx-auto">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-xl p-8 transition-colors duration-300">
                     <h2 id="filter-title" class="text-3xl font-black text-center mb-8 text-academia-navy dark:text-white"></h2>
                     <button id="btn-start-all" onclick="startFilteredQuiz('ALL')" class="w-full mb-6 py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-lg hover:shadow-lg transition-all border-none cursor-pointer active-scale">REZOLVĂ TOATE GRILELE</button>
@@ -291,9 +279,8 @@
                 </div>
             </div>
 
-            <div id="scr-quiz" class="hidden mt-2">
+            <div id="scr-quiz" class="hidden mt-12 w-full max-w-4xl mx-auto">
                 <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[40px] shadow-2xl p-6 md:p-10 relative overflow-hidden transition-colors duration-300">
-                    
                     <div id="exam-header" class="hidden flex-col mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between items-center mb-2">
                             <span id="exam-progress-text" class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Grila 1 din 30</span>
@@ -312,25 +299,20 @@
                     <div id="q-text" class="mb-8"></div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div class="mt-10 flex flex-col items-center">
-    <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
-    
-    <div id="auth-prompt" class="hidden mb-8 text-center glass-card dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-academia-gold/30 w-full max-w-md animate__animated animate__fadeInUp transition-colors duration-300">
-        <p id="auth-prompt-msg" class="text-lg text-slate-700 dark:text-slate-200 font-bold mb-3"></p>
-        <button class="text-academia-gold font-black text-xl md:text-2xl hover:underline bg-transparent border-none cursor-pointer" onclick="showAuthModal()">CREEAZĂ CONT &rarr;</button>
-    </div>
-
-    <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale">Trimite Răspunsul</button>
-</div>
+                        <div id="q-sursa" class="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wide text-center"></div>
+                        <div id="auth-prompt" class="hidden mb-8 text-center glass-card dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-academia-gold/30 w-full max-w-md animate__animated animate__fadeInUp transition-colors duration-300">
+                            <p id="auth-prompt-msg" class="text-lg text-slate-700 dark:text-slate-200 font-bold mb-3"></p>
+                            <button class="text-academia-gold font-black text-xl md:text-2xl hover:underline bg-transparent border-none cursor-pointer" onclick="showAuthModal()">CREEAZĂ CONT &rarr;</button>
+                        </div>
+                        <button id="btn-action" disabled class="w-full max-w-md py-5 bg-academia-navy text-academia-gold rounded-2xl font-black text-xl disabled:opacity-20 transition-all border-none cursor-pointer active-scale">Trimite Răspunsul</button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="exam-modal" class="hidden fixed inset-0 z-[90] bg-academia-navy/90 backdrop-blur-sm flex items-center justify-center p-4">
+            
+        </div> <div id="exam-modal" class="hidden fixed inset-0 z-[90] bg-academia-navy/90 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="glass-card dark:bg-slate-900 rounded-[40px] p-8 w-full max-w-lg relative animate__animated animate__zoomIn animate__faster border-none shadow-2xl transition-colors duration-300">
                 <button onclick="closeExamConfig()" class="absolute top-6 right-8 text-slate-300 hover:text-rose-500 text-3xl font-black border-none bg-transparent cursor-pointer">&times;</button>
                 <h2 class="text-3xl font-black text-center mb-6 dark:text-white">Setări Examen</h2>
-                
                 <div class="space-y-6">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">1. Selectează Materiile</p>
@@ -346,7 +328,6 @@
                             </label>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">2. Timp (Min)</p>
@@ -368,7 +349,6 @@
                             </select>
                         </div>
                     </div>
-
                     <button onclick="launchExam()" class="w-full py-5 mt-4 bg-academia-gold text-white rounded-2xl font-black text-lg border-none cursor-pointer active-scale shadow-lg hover:shadow-xl transition-all">Începe testarea&rarr;</button>
                 </div>
             </div>
@@ -383,9 +363,9 @@
                     <input id="auth-password" type="password" placeholder="Parolă" class="w-full px-6 py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 dark:bg-slate-800 focus:border-academia-gold outline-none font-bold text-academia-navy dark:text-white transition-colors duration-300">
                     <div id="auth-error" class="hidden text-rose-500 text-xs font-black text-center"></div>
                     <div class="grid grid-cols-2 gap-4 mt-2">
-    <button onclick="handleRegister()" class="py-4 bg-academia-navy text-academia-gold rounded-xl font-black hover:shadow-lg transition-all border-none cursor-pointer">Cont Nou</button>
-    <button onclick="handleLogin()" class="py-4 bg-slate-50 dark:bg-slate-800 text-academia-navy dark:text-white border-2 border-slate-100 dark:border-slate-700 rounded-xl font-black hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer">Conectare</button>
-</div>
+                        <button onclick="handleRegister()" class="py-4 bg-academia-navy text-academia-gold rounded-xl font-black hover:shadow-lg transition-all border-none cursor-pointer">Cont Nou</button>
+                        <button onclick="handleLogin()" class="py-4 bg-slate-50 dark:bg-slate-800 text-academia-navy dark:text-white border-2 border-slate-100 dark:border-slate-700 rounded-xl font-black hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer">Conectare</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -474,6 +454,29 @@ const TITLES = {
         navigateTo('scr-quiz');
         renderQ();
     }
+function handleHomeRevizuire() {
+    // 1. Dacă nu este logat, deschidem modalul de avertizare
+    if (!currentUser) {
+        document.getElementById('modal-revizuire-auth').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Oprim scroll-ul
+        return;
+    }
+
+    // 2. Dacă este logat, dar nu are greșeli
+    if (state.gresite.length === 0) {
+        alert("Bravo! Nu ai nicio grilă greșită salvată momentan.");
+        return;
+    }
+
+    // 3. Dacă totul e ok, intrăm în revizuire
+    startFilteredQuiz('ERRORS');
+}
+
+function closeRevizuireModal() {
+    document.getElementById('modal-revizuire-auth').classList.add('hidden');
+    document.body.style.overflow = ''; // Reactivăm scroll-ul
+}
+
 
     function startTimer() {
         clearInterval(examState.timer);
@@ -621,7 +624,7 @@ function handleInitialRouting() {
             if(inDiv) inDiv.classList.add('hidden'); 
             if(statsCont) {
                 statsCont.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-16 px-4">
+                    <div class="flex flex-col items-center justify-center pt-4 px-4">
                         <div class="glass-card dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] p-10 shadow-2xl max-w-md w-full text-center mx-auto">
                             <div class="w-16 h-16 bg-academia-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <svg class="w-8 h-8 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
@@ -731,7 +734,7 @@ function handleInitialRouting() {
 
         const seifBtnHtml = gLen > 0 
             ? `<button onclick="startFilteredQuiz('ERRORS')" class="mt-4 py-2 w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer border-none shadow-sm uppercase tracking-wider">Rezolvă ${gLen} Greșeli &rarr;</button>`
-            : `<button disabled class="mt-4 py-2 w-full bg-white/50 dark:bg-black/10 text-rose-300 dark:text-rose-800 rounded-xl font-bold text-xs cursor-not-allowed border-none uppercase tracking-wider">Seif Gol 👏</button>`;
+            : `<button disabled class="mt-4 py-2 w-full bg-white/50 dark:bg-black/10 text-rose-300 dark:text-rose-800 rounded-xl font-bold text-xs cursor-not-allowed border-none uppercase tracking-wider">Nu ai nicio grilă greșită 👏</button>`;
 
         if(statsCont) {
             statsCont.innerHTML = `
@@ -1379,12 +1382,92 @@ function openPaymentModal() {
             navigateTo('scr-lobby'); 
         }
     }
+
+// ==========================================
+// CONȚINUT ȘI LOGICĂ PAGINI LEGALE
+// ==========================================
+const LEGAL_TEXTS = {
+    termeni: `
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">1. Condiții de Utilizare</h3>
+        <p class="mb-4">Prin accesarea platformei "Grile Admitere Drept", sunteți de acord să respectați acești termeni. Serviciul este oferit "ca atare" și este destinat exclusiv pregătirii individuale pentru examenul de admitere la facultatea de Drept.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">2. Proprietate Intelectuală</h3>
+        <p class="mb-4">Tot codul, algoritmii și design-ul platformei sunt proprietatea noastră exclusivă. Este strict interzisă copierea, extragerea automată sau distribuirea conținutului în scopuri comerciale sau publice fără acord scris.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">3. Plăți și Abonamente</h3>
+        <p class="mb-4">Accesul Premium este oferit pe bază de abonament lunar în valoare de <strong>30 RON</strong>. Plata este procesată securizat prin <strong>Stripe</strong>. Abonamentul se reînnoiește automat lunar până la anularea acestuia de către utilizator.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">4. Politica de Rambursare</h3>
+        <p class="mb-4">Conform legislației privind produsele digitale livrate instantaneu (OUG 34/2014), utilizatorul își pierde dreptul de retragere odată ce accesul la conținutul Premium a început. Nu se oferă rambursări pentru perioadele deja plătite.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">5. Exonerarea de Răspundere</h3>
+        <p>Platforma este un instrument de suport. Nu garantăm admiterea la nicio facultate de profil. Rezultatele depind în totalitate de studiul individual al utilizatorului.</p>
+    `,
+    privacy: `
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">1. Ce date colectăm</h3>
+        <p class="mb-4">Colectăm adresa de email (pentru cont), istoricul de rezolvare a grilelor (pentru statistici) și adresa IP (pentru securitate și prevenirea fraudelor).</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">2. Cum folosim datele</h3>
+        <p class="mb-4">Datele sunt utilizate strict pentru funcționarea platformei, calcularea progresului tău academic și procesarea plăților prin partenerii noștri.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">3. Procesatori terți</h3>
+        <p class="mb-4">Datele tale sunt stocate securizat folosind <strong>Supabase</strong> (baze de date) și sunt partajate cu <strong>Stripe</strong> (pentru facturare). Nu vindem datele tale către terțe părți.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">4. Drepturile tale (GDPR)</h3>
+        <p>Conform regulamentului GDPR, ai dreptul de a solicita accesul la datele tale, rectificarea acestora sau ștergerea definitivă a contului prin trimiterea unui email la adresa de suport sau prin mesaj la numarul de telefon afisat.</p>
+    `,
+    cookies: `
+        <p class="mb-4">Platforma noastră folosește module cookie pentru a asigura o funcționare corectă și securizată.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">Cookie-uri Esențiale</h3>
+        <p class="mb-4"><strong>Supabase Auth:</strong> Utilizat pentru a te menține logat în contul tău în timpul sesiunii de studiu.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">Cookie-uri Funcționale</h3>
+        <p class="mb-4"><strong>Stripe:</strong> Utilizat pentru procesarea securizată a plăților și detectarea tentativelor de fraudă la nivelul cardului bancar.</p>
+        
+        <h3 class="font-black text-academia-navy dark:text-white mb-4 text-xl">Cookie-uri Analitice</h3>
+        <p><strong>PostHog:</strong> Utilizat pentru a înțelege ce secțiuni ale site-ului sunt cele mai folosite, în scopul îmbunătățirii experienței de utilizare.</p>
+    `,
+    contact: `
+        <div class="text-center py-10">
+            <h3 class="text-2xl font-black text-academia-navy dark:text-white mb-6 uppercase tracking-tight">Suport Tehnic și Clienți</h3>
+            <p class="mb-2 text-slate-500 font-medium">Pentru întrebări legate de abonamente sau probleme tehnice:</p>
+            <a href="mailto:niculaealexia2008@gmail.com" class="text-2xl font-black text-academia-gold hover:underline">niculaealexia2008@gmail.com</a>
+	<p class="mb-2 text-slate-500 font-medium">Sau direct la telefon:</p>
+            <a href="tel:0773766991" class="text-2xl font-black text-academia-navy dark:text-white hover:text-academia-gold transition-colors">0773766991</a>
+                   </div>
+    `
+};
+
+function openLegal(type) {
+    const titleMap = { termeni: 'Termeni și Condiții', privacy: 'Confidențialitate', cookies: 'Politica de Cookies', contact: 'Contact / Suport' };
+    const modal = document.getElementById('legal-modal');
+    const content = document.getElementById('legal-content');
+    const title = document.getElementById('legal-title');
+    
+    if (modal && content && title) {
+        title.innerText = titleMap[type] || 'Informații';
+        content.innerHTML = LEGAL_TEXTS[type] || '';
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeLegal() {
+    const modal = document.getElementById('legal-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+
 </script>
 
 <div id="paywall-overlay" class="paywall-hidden">
     <div class="paywall-box">
         <h2>Ai atins limita gratuită 🛑</h2>
-        <p>Ai rezolvat cele 15 grile demonstrative. Pentru a debloca accesul nelimitat la toate grilele și statisticile de performanță, upgradează la contul Premium.</p>
+        <p>Pentru a debloca accesul nelimitat la toate grilele și statisticile de performanță, upgradează la contul Premium.</p>
         <ul class="paywall-benefits">
             <li>✅ Acces nelimitat la mii de grile</li>
             <li>✅ Simulări de examen în timp real</li>
@@ -1395,6 +1478,55 @@ function openPaymentModal() {
     </div>
 </div>
 
+<footer class="mt-20 py-10 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+    <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+            <h4 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-4">Legal</h4>
+            <button onclick="openLegal('termeni')" class="block text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-academia-gold mb-2 bg-transparent border-none p-0 cursor-pointer">Termeni și Condiții</button>
+        </div>
+        <div>
+            <h4 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-4">Privacy</h4>
+            <button onclick="openLegal('privacy')" class="block text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-academia-gold mb-2 bg-transparent border-none p-0 cursor-pointer">Politica de Confidențialitate</button>
+        </div>
+        <div>
+            <h4 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-4">Cookies</h4>
+            <button onclick="openLegal('cookies')" class="block text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-academia-gold mb-2 bg-transparent border-none p-0 cursor-pointer">Politica de Cookies</button>
+        </div>
+        <div>
+            <h4 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-4">Contact</h4>
+            <button onclick="openLegal('contact')" class="block text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-academia-gold mb-2 bg-transparent border-none p-0 cursor-pointer">Suport Clienți</button>
+        </div>
+    </div>
+    <p class="text-center text-[10px] text-slate-400 font-bold mt-10 uppercase tracking-widest">© 2026 Grile Admitere Drept</p>
+</footer>
+
+<div id="legal-modal" class="hidden fixed inset-0 z-[150] bg-academia-navy/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card dark:bg-slate-900 rounded-[32px] w-full max-w-3xl max-h-[80vh] flex flex-col relative animate__animated animate__fadeInUp animate__faster border-none shadow-2xl">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+            <h2 id="legal-title" class="text-2xl font-black dark:text-white uppercase tracking-tight"></h2>
+            <button onclick="closeLegal()" class="text-slate-400 hover:text-rose-500 text-3xl font-black bg-transparent border-none cursor-pointer">&times;</button>
+        </div>
+        <div id="legal-content" class="p-8 overflow-y-auto custom-scroll text-slate-600 dark:text-slate-300 leading-relaxed text-sm md:text-base">
+            </div>
+    </div>
+</div>
+
+<div id="modal-revizuire-auth" class="hidden fixed inset-0 z-[200] bg-academia-navy/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card dark:bg-slate-900 p-10 rounded-[32px] w-full max-w-md text-center relative animate__animated animate__zoomIn animate__faster border-none">
+        <button onclick="closeRevizuireModal()" class="absolute top-4 right-6 text-slate-400 hover:text-rose-500 text-3xl font-black bg-transparent border-none cursor-pointer">&times;</button>
+        
+        <div class="w-20 h-20 bg-academia-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-academia-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        
+        
+        <p class="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Pentru a-ți salva greșelile și a le revizui ulterior, trebuie să ai un cont activ.</p>
+        
+        <button onclick="closeRevizuireModal(); showAuthModal();" class="w-full py-4 bg-academia-navy text-academia-gold rounded-[20px] font-black text-lg shadow-xl hover:scale-[1.02] transition-transform">
+            Intră în cont / Creează cont
+        </button>
+    </div>
+</div>
 
 </body>
 </html>
