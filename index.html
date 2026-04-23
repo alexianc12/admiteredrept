@@ -49,7 +49,7 @@
 });
     </script>
 
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q2XGH2Q1XD"></script>
 	<script>
     	window.dataLayer = window.dataLayer || [];
     	function gtag(){dataLayer.push(arguments);}
@@ -414,7 +414,21 @@ const TITLES = {
     function openExamConfig() { document.getElementById('exam-modal').classList.remove('hidden'); }
     function closeExamConfig() { document.getElementById('exam-modal').classList.add('hidden'); }
 
-    function launchExam() {
+    function launchExam() 
+{
+	// --- FIX SECURITATE PAYWALL ---
+        const isPremium = currentUser?.user_metadata?.is_premium === true;
+        const DEV_MODE_TEST = false; 
+
+        if (!isPremium) {
+            if ((!isInGracePeriod || DEV_MODE_TEST) && solvedCount >= FREE_LIMIT) {
+                closeExamConfig(); // Închidem modalul de setări
+                triggerPaywall();  // Declanșăm paywall-ul
+                return;            // Oprim generarea examenului
+            }
+        }
+        // ------------------------------
+
         const countVal = parseInt(document.getElementById('exam-count-sel').value);
         const timeVal = parseInt(document.getElementById('exam-time-sel').value);
         let pool = [];
@@ -507,10 +521,19 @@ function closeRevizuireModal() {
         document.documentElement.classList.add('dark');
     }
 
-   function navigateTo(id, silent = false) {
-    ['scr-loading', 'scr-error', 'scr-home', 'scr-lobby', 'scr-stats', 'scr-filter', 'scr-quiz'].forEach(s => { 
-        document.getElementById(s)?.classList.add('hidden'); 
-    });
+   function navigateTo(id, silent = false) 
+{
+	// --- FIX MEMORY LEAK TIMER ---
+        if (id !== 'scr-quiz' && examState.isActive) {
+            examState.isActive = false;
+            clearInterval(examState.timer);
+            document.getElementById('exam-header').classList.add('hidden');
+        }
+        // -----------------------------
+
+        ['scr-loading', 'scr-error', 'scr-home', 'scr-lobby', 'scr-stats', 'scr-filter', 'scr-quiz'].forEach(s => { 
+            document.getElementById(s)?.classList.add('hidden'); 
+        });
 
     const target = document.getElementById(id);
     if(target) {
@@ -1183,21 +1206,10 @@ function triggerPaywall() {
     document.body.style.overflow = 'hidden'; 
 }
 
-
-
-
-
-function openPaymentModal() {
-    if (!currentUser) return alert("Eroare: Trebuie să fii autentificat.");
-    
-    const stripePaymentLink = "https://buy.stripe.com/test_6oUfZad6uf8D8XGbFTc3m00";
-    const params = new URLSearchParams({
-        prefilled_email: currentUser.email,
-        client_reference_id: currentUser.id
-    });
-    window.location.href = `${stripePaymentLink}?${params.toString()}`;
+function closePaywall() {
+    document.getElementById('paywall-overlay').classList.add('paywall-hidden');
+    document.body.style.overflow = ''; // Reactivăm scroll-ul paginii
 }
-
 
 
  function processRawData(data) {
@@ -1342,36 +1354,47 @@ function openPaymentModal() {
 }
 
 
-    function finishExam() {
+   function finishExam() {
         examState.isActive = false; clearInterval(examState.timer);
         document.getElementById('main-nav').classList.remove('hidden'); document.getElementById('exam-header').classList.add('hidden'); document.getElementById('exam-header').classList.remove('flex');
         
         let scor = 0;
-        state.list.forEach((q, index) => {
-            let gid = q.id || q.id_grila || ""; const m = q.enunt.match(/^\s*(\d+)[\.\-\)]\s+/); 
-            if (m) gid = gid || m[1]; gid = gid || index;
+        state.list.forEach((q) => {
+            // FIX CRITIC: Sincronizare perfectă cu cheia folosită la submitAnswer
+            let gid = q.stable_id; 
 
-            let raspunsElev = examState.userAnswers[gid] || "N/A"; let raspunsCorect = (q.raspuns_corect || "").trim().toUpperCase();
+            let raspunsElev = examState.userAnswers[gid] || "N/A"; 
+            let raspunsCorect = (q.raspuns_corect || "").trim().toUpperCase();
             let status = (raspunsElev === raspunsCorect) ? 'corect' : 'gresit';
+            
             if (status === 'corect') scor++;
         });
         
-        let procent = Math.round((scor / state.list.length) * 100);
+        // Prevenire împărțire la zero în caz de eroare de rețea
+        let procent = state.list.length > 0 ? Math.round((scor / state.list.length) * 100) : 0;
+        
         try { posthog.capture('examen_finalizat', { scor: scor, total_grile: state.list.length, acuratete: procent, timp_ramas_secunde: examState.timeLeftSec }); } catch(e) {}
         
         const quizCard = document.querySelector('#scr-quiz > div');
-        quizCard.innerHTML = `
-            <div class="text-center py-12 animate__animated animate__fadeIn">
-                <h2 class="text-4xl md:text-5xl font-black text-academia-navy dark:text-white mb-4">Examen Finalizat</h2>
-                <p class="text-slate-500 dark:text-slate-400 mb-10 font-bold uppercase tracking-widest text-xs">Raport de performanță</p>
-                <div class="inline-flex items-center justify-center w-40 h-40 rounded-full border-[8px] ${procent >= 70 ? 'border-emerald-500 text-emerald-500' : 'border-academia-gold text-academia-gold'} mb-8 shadow-xl">
-                    <span class="text-5xl font-black">${scor}/${state.list.length}</span>
-                </div>
-                <h3 class="text-3xl font-black text-academia-navy dark:text-white mb-10">${procent}% Acuratețe</h3>
-                <button onclick="window.location.reload()" class="w-full max-w-md py-6 bg-academia-navy text-academia-gold rounded-[24px] font-black text-xl border-none cursor-pointer active-scale shadow-2xl hover:shadow-lg transition-all">Revenire la Dashboard</button>
-            </div>`;
-        if(procent >= 70) confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+        if (quizCard) {
+            quizCard.innerHTML = `
+                <div class="text-center py-12 animate__animated animate__fadeIn">
+                    <h2 class="text-4xl md:text-5xl font-black text-academia-navy dark:text-white mb-4">Examen Finalizat</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mb-10 font-bold uppercase tracking-widest text-xs">Raport de performanță</p>
+                    <div class="inline-flex items-center justify-center w-40 h-40 rounded-full border-[8px] ${procent >= 70 ? 'border-emerald-500 text-emerald-500' : 'border-academia-gold text-academia-gold'} mb-8 shadow-xl">
+                        <span class="text-5xl font-black">${scor}/${state.list.length}</span>
+                    </div>
+                    <h3 class="text-3xl font-black text-academia-navy dark:text-white mb-10">${procent}% Acuratețe</h3>
+                    <button onclick="window.location.reload()" class="w-full max-w-md py-6 bg-academia-navy text-academia-gold rounded-[24px] font-black text-xl border-none cursor-pointer active-scale shadow-2xl hover:shadow-lg transition-all">Revenire la Dashboard</button>
+                </div>`;
+        }
+        
+        if(procent >= 70 && typeof confetti === 'function') {
+            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+        }
     }
+
+
 
     window.addEventListener('DOMContentLoaded', init);
     // AM ȘTERS AICI old popstate event listener care bloca aplicația
@@ -1465,7 +1488,9 @@ function closeLegal() {
 </script>
 
 <div id="paywall-overlay" class="paywall-hidden">
-    <div class="paywall-box">
+    <div class="paywall-box relative">
+        <button onclick="closePaywall()" class="absolute top-4 right-6 text-slate-400 hover:text-rose-500 text-3xl font-black bg-transparent border-none cursor-pointer">&times;</button>
+        
         <h2>Ai atins limita gratuită 🛑</h2>
         <p>Pentru a debloca accesul nelimitat la toate grilele și statisticile de performanță, upgradează la contul Premium.</p>
         <ul class="paywall-benefits">
