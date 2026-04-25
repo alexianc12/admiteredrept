@@ -14,6 +14,8 @@
     <meta property="og:title" content="Grile Admitere Drept">
     <meta property="og:description" content="Grile de examen și simulări. Mod de noapte, salvarea greșelilor și timer inclus.">
     <meta property="og:image" content="https://grileadmiteredrept.vercel.app/"> 
+<meta name="google-site-verification=Pxq1GTa5HggsK0Iuz8qSXM5wZ9YQpN8gPyKMpM8Cgfw" />
+
 
     <script type="application/ld+json">
     {
@@ -243,15 +245,20 @@
                 </div>
             </div>
 
-            <div id="scr-stats" class="hidden mt-12 flex flex-col items-center w-full">
+          <div id="scr-stats" class="hidden mt-12 flex flex-col items-center w-full">
                 <div class="w-full max-w-4xl text-center">
-                    <div class="flex items-center justify-between mb-10">
-                       
+                    <div class="flex items-center justify-between mb-10 px-4">
+                        <h2 class="text-3xl md:text-4xl font-black text-academia-navy dark:text-white uppercase tracking-tighter">Progres Real</h2>
+                        <button onclick="navigateTo('scr-home')" class="p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:scale-110 transition-transform cursor-pointer border-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
                     </div>
-                    <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center"></div>
+                    <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center w-full"></div>
                     <div id="user-stats-container" class="w-full mt-6"></div>
                 </div>
             </div>
+
+
 
             <div id="scr-lobby" class="hidden mt-12 flex flex-col items-center w-full">
                 <div class="w-full max-w-2xl">
