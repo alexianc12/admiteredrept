@@ -424,7 +424,7 @@ const TITLES = {
     function launchExam() 
 {
 	// --- FIX SECURITATE PAYWALL ---
-        const isPremium = currentUser?.user_metadata?.is_premium === true;
+        const isPremium = currentUser?.is_premium === true;
         const DEV_MODE_TEST = false; 
 
         if (!isPremium) {
