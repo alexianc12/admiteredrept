@@ -201,7 +201,12 @@
                 </div>
                 <div id="menu-logged-in" class="hidden flex flex-col p-4">
                     <p id="user-email-display" class="text-xs text-slate-400 font-bold truncate mb-4 text-center">...</p>
-                    <button onclick="handleLogout()" class="w-full py-3 text-sm text-rose-500 font-bold bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors border-none cursor-pointer text-center">Deconectare Sesiune</button>
+                    <div id="subscription-info" class="hidden text-center text-xs mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg">
+                        <p class="font-bold text-emerald-700 dark:text-emerald-400">Cont Premium Activ</p>
+                        <p id="subscription-end-date" class="text-slate-500 dark:text-slate-400"></p>
+                    </div>
+                    <button id="btn-cancel-sub" onclick="handleCancelSubscription()" class="hidden w-full py-2 mb-2 text-sm text-slate-600 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors border-none cursor-pointer text-center">Anulează Reînnoirea</button>
+                    <button onclick="handleLogout()" class="w-full py-3 text-sm text-rose-500 font-bold bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors border-none cursor-pointer text-center">Deconectare</button>
                 </div>
             </div>
         </div>
@@ -672,6 +677,29 @@ function handleInitialRouting() {
         if(inDiv) inDiv.classList.remove('hidden');
         document.getElementById('user-email-display').innerText = currentUser.email;
         
+        // Logică nouă pentru afișarea statusului abonamentului
+        const subInfoDiv = document.getElementById('subscription-info');
+        const subEndDateP = document.getElementById('subscription-end-date');
+        const cancelBtn = document.getElementById('btn-cancel-sub');
+
+        if (currentUser.is_paid && currentUser.subscription_current_period_end) {
+            subInfoDiv.classList.remove('hidden');
+            const endDate = new Date(currentUser.subscription_current_period_end);
+            const formattedDate = endDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            if (currentUser.subscription_status === 'canceling') {
+                subEndDateP.innerText = `Accesul expiră pe ${formattedDate}.`;
+                cancelBtn.classList.add('hidden');
+            } else {
+                subEndDateP.innerText = `Următoarea plată: ${formattedDate}`;
+                cancelBtn.classList.remove('hidden');
+            }
+        } else {
+            subInfoDiv.classList.add('hidden');
+            cancelBtn.classList.add('hidden');
+        }
+
+
         const totalRezolvate = state.rawProgress.length; 
         const totalCorecte = state.rawProgress.filter(p => p.status === 'corect').length;
         const gLen = state.gresite.length;
@@ -837,16 +865,15 @@ function handleInitialRouting() {
     async function checkSession() {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            currentUser = session?.user || null;
-            if (currentUser) {
+            if (session?.user) {
                 // Verificăm statusul premium direct din tabelul de profil, nu din metadata
                 const { data: profile } = await supabaseClient
                     .from('user_profiles')
-                    .select('is_paid')
-                    .eq('user_id', currentUser.id)
+                    .select('is_paid, subscription_status, subscription_current_period_end')
+                    .eq('user_id', session.user.id)
                     .single();
                 
-                if (profile) currentUser.is_premium = profile.is_paid;
+                currentUser = { ...session.user, ...profile };
 
                 try { posthog.identify(currentUser.id, { email: currentUser.email }); } catch(e) {}
                 const progressPromise = supabaseClient.from('user_progress').select('grila_id, status, materie, durata_secunde').eq('user_id', currentUser.id);
@@ -859,6 +886,8 @@ function handleInitialRouting() {
                     state.gresite = data.filter(d => d.status === 'gresit').map(d => String(d.grila_id));
                 }
                 document.getElementById('auth-prompt')?.classList.add('hidden');
+            } else {
+                currentUser = null;
             }
             updateProfileUI(); updateLobbyUI();
         } catch(e) { console.error("Eroare sesiune:", e); }
@@ -941,6 +970,35 @@ function handleInitialRouting() {
         else { try { posthog.capture('login_success'); } catch(err){} closeAuthModal(); window.location.reload(); }
     }
 
+    async function handleCancelSubscription() {
+        if (!currentUser) return;
+
+        if (!confirm("Ești sigur că vrei să anulezi abonamentul? Vei păstra accesul Premium până la finalul perioadei deja plătite, dar abonamentul nu se va reînnoi automat.")) {
+            return;
+        }
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) throw new Error("Sesiune expirată. Te rugăm să te re-loghezi.");
+
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-cancel`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'A apărut o eroare.');
+
+            alert(result.message);
+            window.location.reload();
+        } catch (error) {
+            alert(`Eroare la anulare: ${error.message}`);
+        }
+    }
+
     async function handleLogout() { try { posthog.reset(); } catch(e){} await supabaseClient.auth.signOut(); window.location.reload(); }
 
     function toggleAccordion(capId) {
@@ -961,7 +1019,7 @@ function openPaymentModal() {
         return;
     }
     // Injectăm client_reference_id direct în link-ul de plată Stripe
-    const stripeUrl = `https://buy.stripe.com/5kQ8wIc2q9Ojei025jc3m01?client_reference_id=${currentUser.id}`;
+    const stripeUrl = `https://buy.stripe.com/5kQ8wIc2q9Ojei0288?client_reference_id=${currentUser.id}`;
     window.location.href = stripeUrl;
 }
 
@@ -970,6 +1028,7 @@ function openPaymentModal() {
         // ==========================================
         // GATEKEEPER 1: BLOCAJ LA INTRARE (Anti-Refresh)
         // ==========================================
+        // ========================================== 
         const isPremium = currentUser?.is_premium === true;
         const DEV_MODE_TEST = false; 
 
