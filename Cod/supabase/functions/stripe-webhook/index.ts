@@ -79,6 +79,29 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Interceptăm actualizarea abonamentului (ex: anularea reînnoirii)
+  if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object as Stripe.Subscription;
+    const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '', 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Dacă 'cancel_at_period_end' este true, înseamnă că utilizatorul a anulat reînnoirea.
+    if (subscription.cancel_at_period_end) {
+        await supabaseAdmin.from('user_profiles')
+          .update({ 
+            subscription_status: 'canceling', // Setăm un status nou pentru a ști că va expira
+            subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          })
+          .eq('stripe_subscription_id', subscription.id);
+    } else {
+        // Aici poți gestiona și alte actualizări, de exemplu, reactivarea unui abonament anulat.
+        // Momentan, nu este necesar, dar e bine de știut.
+    }
+  }
+
+
   // Interceptăm anularea efectivă a abonamentului (la finalul perioadei)
   // Acest eveniment este trimis de Stripe automat când perioada plătită se încheie.
   if (event.type === 'customer.subscription.deleted') {

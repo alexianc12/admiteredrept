@@ -681,22 +681,25 @@ function handleInitialRouting() {
         const subInfoDiv = document.getElementById('subscription-info');
         const subEndDateP = document.getElementById('subscription-end-date');
         const cancelBtn = document.getElementById('btn-cancel-sub');
+        const subscribeBtn = document.getElementById('btn-subscribe');
 
         if (currentUser.is_paid && currentUser.subscription_current_period_end) {
             subInfoDiv.classList.remove('hidden');
+            subscribeBtn.classList.add('hidden'); // Ascundem butonul de abonare dacă e deja premium
             const endDate = new Date(currentUser.subscription_current_period_end);
             const formattedDate = endDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
             
             if (currentUser.subscription_status === 'canceling') {
                 subEndDateP.innerText = `Accesul expiră pe ${formattedDate}.`;
-                cancelBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden'); // Ascundem butonul de anulare dacă deja a anulat
             } else {
                 subEndDateP.innerText = `Următoarea plată: ${formattedDate}`;
-                cancelBtn.classList.remove('hidden');
+                cancelBtn.classList.remove('hidden'); // Afișăm butonul de anulare
             }
         } else {
             subInfoDiv.classList.add('hidden');
             cancelBtn.classList.add('hidden');
+            subscribeBtn.classList.remove('hidden'); // Afișăm butonul de abonare dacă NU e premium
         }
 
 
