@@ -10,14 +10,17 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 // Adresa URL a aplicației tale
 const APP_URL = Deno.env.get('APP_URL')!;
 
+// Headerele CORS pe care le vom refolosi
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 Deno.serve(async (req) => {
   // Răspunsul la "întrebarea de siguranță" a browserului (preflight request)
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*', // Permite cereri de la orice origine
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
+      headers: corsHeaders,
     });
   }
 
@@ -65,13 +68,19 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ url: session.url }),
       {         
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
 
   } catch (error) {
     console.error('Eroare la crearea sesiunii de checkout:', error.message);
-    return new Response(`Eroare server: ${error.message}`, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: `Eroare server: ${error.message}` }), 
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
