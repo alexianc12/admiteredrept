@@ -1017,7 +1017,11 @@ function handleInitialRouting() {
             if (!session) throw new Error("Sesiune expirată. Te rugăm să te re-autentifici.");
 
             // Apelăm funcția de pe Supabase pe care am creat-o
-            const { data, error } = await supabaseClient.functions.invoke('create-checkout-session');
+            const { data, error } = await supabaseClient.functions.invoke('create-checkout-session', {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
 
             if (error) throw error;
 
