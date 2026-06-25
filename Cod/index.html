@@ -205,6 +205,7 @@
                         <p class="font-bold text-emerald-700 dark:text-emerald-400">Cont Premium Activ</p>
                         <p id="subscription-end-date" class="text-slate-500 dark:text-slate-400"></p>
                     </div>
+                    <button id="btn-subscribe" onclick="handleSubscribe()" class="hidden w-full py-3 mb-2 bg-academia-gold text-white rounded-xl font-bold text-sm border-none cursor-pointer hover:shadow-lg transition-all">Devino Premium</button>
                     <button id="btn-cancel-sub" onclick="handleCancelSubscription()" class="hidden w-full py-2 mb-2 text-sm text-slate-600 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors border-none cursor-pointer text-center">Anulează Reînnoirea</button>
                     <button onclick="handleLogout()" class="w-full py-3 text-sm text-rose-500 font-bold bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors border-none cursor-pointer text-center">Deconectare</button>
                 </div>
@@ -998,6 +999,34 @@ function handleInitialRouting() {
             window.location.reload();
         } catch (error) {
             alert(`Eroare la anulare: ${error.message}`);
+        }
+    }
+
+    async function handleSubscribe() {
+        if (!currentUser) {
+            alert("Te rugăm să te autentifici pentru a te abona.");
+            return;
+        }
+
+        const btn = document.getElementById('btn-subscribe');
+        btn.disabled = true;
+        btn.innerText = "Se procesează...";
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) throw new Error("Sesiune expirată. Te rugăm să te re-autentifici.");
+
+            // Apelăm funcția de pe Supabase pe care am creat-o
+            const { data, error } = await supabaseClient.functions.invoke('create-checkout-session');
+
+            if (error) throw error;
+
+            // Redirecționăm utilizatorul la pagina de plată securizată
+            window.location.href = data.url;
+        } catch (error) {
+            alert(`A apărut o eroare: ${error.message}`);
+            btn.disabled = false;
+            btn.innerText = "Devino Premium";
         }
     }
 
