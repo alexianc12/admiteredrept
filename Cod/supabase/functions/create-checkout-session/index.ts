@@ -11,9 +11,19 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 const APP_URL = Deno.env.get('APP_URL')!;
 
 Deno.serve(async (req) => {
-  // Asigură-te că request-ul este de tip POST
-  if (req.method !== 'POST') {
-    return new Response('Metoda nepermisă', { status: 405 });
+  // Răspunsul la "întrebarea de siguranță" a browserului (preflight request)
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', {
+      headers: {
+        'Access-Control-Allow-Origin': '*', // Permite cereri de la orice origine
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
+    });
+  }
+
+  // Verificăm dacă request-ul este de tip POST
+  if (req.method !== 'POST') { 
+    return new Response('Metoda nepermisă', { status: 405 }); 
   }
 
   const authHeader = req.headers.get('Authorization')!;
