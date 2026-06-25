@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     // Returnăm URL-ul de plată către frontend
     return new Response(
       JSON.stringify({ url: session.url }),
-      {
+      {         
         headers: { 'Content-Type': 'application/json' },
         status: 200,
       }
