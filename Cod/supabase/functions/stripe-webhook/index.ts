@@ -52,8 +52,8 @@ Deno.serve(async (req) => {
 
         // Inițializăm Supabase ca ADMIN pentru a putea scrie în baza de date
         const supabaseAdmin = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          Deno.env.get('PROJECT_URL') ?? '',
+          Deno.env.get('SERVICE_KEY') ?? ''
         );
 
         // Actualizăm statusul în tabelul 'user_profiles'
@@ -83,8 +83,8 @@ Deno.serve(async (req) => {
   if (event.type === 'customer.subscription.updated') {
     const subscription = event.data.object as Stripe.Subscription;
     const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '', 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        Deno.env.get('PROJECT_URL') ?? '', 
+        Deno.env.get('SERVICE_KEY') ?? ''
     );
 
     // Dacă 'cancel_at_period_end' este true, înseamnă că utilizatorul a anulat reînnoirea.
@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription;
     const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '', 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        Deno.env.get('PROJECT_URL') ?? '', 
+        Deno.env.get('SERVICE_KEY') ?? ''
     );
     
     // Căutăm user-ul după ID-ul de abonament și îi resetăm statusul

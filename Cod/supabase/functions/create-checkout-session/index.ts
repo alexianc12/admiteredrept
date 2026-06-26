@@ -36,13 +36,13 @@ Deno.serve(async (req) => {
 
   try {
     // Validăm utilizatorul cu Supabase folosind token-ul din frontend
+    // Inițializăm clientul Supabase în contextul request-ului, folosind token-ul de autorizare al utilizatorului
     const supabaseClient = createClient(
-      Deno.env.get('APP_URL')!,
-      Deno.env.get('SERVICE_KEY')!, // Folosim cheia de admin pentru a avea permisiuni complete pe server
+      Deno.env.get('PROJECT_URL')!,
+      Deno.env.get('PROJECT_ANON_KEY')!,
       { global: { headers: { Authorization: authHeader } } }
     );
     
-
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
