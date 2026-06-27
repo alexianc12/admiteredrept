@@ -1005,7 +1005,6 @@ function handleInitialRouting() {
     async function handleSubscribe() {
         // Am refactorizat pentru a folosi aceeași logică ca paywall-ul,
         // care este mai simplă și funcționează corect.
-        // Această funcție va redirecționa direct la Stripe.
         openPaymentModal();
     }
 
@@ -1028,13 +1027,8 @@ function openPaymentModal() {
         alert("Te rugăm să te autentifici pentru a cumpăra Premium");
         return;
     }
-    // ========================================================================
-    // TODO: Înlocuiește link-ul de mai jos cu noul tău link de plată din Stripe Test Mode.
-    // Asigură-te că link-ul începe cu "https://buy.stripe.com/test/..."
-    // ========================================================================
-    // Pune aici link-ul pe care l-ai copiat din Stripe. Exemplu: const paymentLink = "https://buy.stripe.com/test/a1b2c3d4e5f6";
-    const paymentLink = "https://buy.stripe.com/test_6oUfZad6uf8D8XGbFTc3m00"; 
-    const stripeUrl = `${paymentLink}?client_reference_id=${currentUser.id}`;
+    // Injectăm client_reference_id direct în link-ul de plată Stripe
+    const stripeUrl = `https://buy.stripe.com/5kQ8wIc2q9Ojei0288?client_reference_id=${currentUser.id}`;
     window.location.href = stripeUrl;
 }
 
