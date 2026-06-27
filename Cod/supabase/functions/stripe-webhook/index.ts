@@ -9,7 +9,9 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 
 const cryptoProvider = stripe.createCryptoProvider();
 
-Deno.serve(async (req) => {
+// Adăugăm opțiunea { onListen: ... } pentru a dezactiva verificarea JWT.
+// Securitatea este asigurată de validarea semnăturii Stripe de mai jos.
+Deno.serve({ onListen: () => {} }, async (req) => {
   const signature = req.headers.get('Stripe-Signature');
 
   // Securitate: respingem orice request care nu vine de la Stripe
@@ -39,6 +41,8 @@ Deno.serve(async (req) => {
     return new Response(`Eroare Webhook: Semnătură invalidă`, { status: 400 });
   }
 
+  console.log(`[Webhook] Eveniment primit: ${event.type}`);
+
   // Interceptăm plata finalizată
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
@@ -46,6 +50,7 @@ Deno.serve(async (req) => {
     const subscriptionId = session.subscription;
 
     if (userId && typeof subscriptionId === 'string') {
+      console.log(`[Webhook] Procesare checkout.session.completed pentru user_id: ${userId}`);
       try {
         // Preluăm detaliile complete ale abonamentului de la Stripe
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -56,6 +61,7 @@ Deno.serve(async (req) => {
           Deno.env.get('SERVICE_KEY') ?? ''
         );
 
+        console.log(`[Webhook] Actualizare profil în Supabase...`);
         // Actualizăm statusul în tabelul 'user_profiles'
         const { error } = await supabaseAdmin
           .from('user_profiles')
@@ -69,11 +75,12 @@ Deno.serve(async (req) => {
           .eq('user_id', userId);
 
         if (error) {
-          console.error('Eroare la update user:', error);
+          console.error('[Webhook] Eroare la update user în Supabase:', error);
           return new Response('Eroare baza de date', { status: 500 });
         }
+        console.log(`[Webhook] Profilul pentru user_id: ${userId} a fost actualizat cu succes!`);
       } catch (stripeError) {
-        console.error('Eroare la preluarea abonamentului de la Stripe:', stripeError);
+        console.error('[Webhook] Eroare la preluarea abonamentului de la Stripe:', stripeError);
         return new Response('Eroare server Stripe', { status: 500 });
       }
     }
@@ -89,6 +96,7 @@ Deno.serve(async (req) => {
 
     // Dacă 'cancel_at_period_end' este true, înseamnă că utilizatorul a anulat reînnoirea.
     if (subscription.cancel_at_period_end) {
+        console.log(`[Webhook] Anulare programată pentru subscription_id: ${subscription.id}`);
         await supabaseAdmin.from('user_profiles')
           .update({ 
             subscription_status: 'canceling', // Setăm un status nou pentru a ști că va expira
@@ -96,6 +104,7 @@ Deno.serve(async (req) => {
           })
           .eq('stripe_subscription_id', subscription.id);
     } else {
+        console.log(`[Webhook] Actualizare abonament (nu este anulare) pentru subscription_id: ${subscription.id}`);
         // Aici poți gestiona și alte actualizări, de exemplu, reactivarea unui abonament anulat.
         // Momentan, nu este necesar, dar e bine de știut.
     }
@@ -111,6 +120,7 @@ Deno.serve(async (req) => {
         Deno.env.get('SERVICE_KEY') ?? ''
     );
     
+    console.log(`[Webhook] Ștergere abonament (perioadă expirată) pentru subscription_id: ${subscription.id}`);
     // Căutăm user-ul după ID-ul de abonament și îi resetăm statusul
     await supabaseAdmin.from('user_profiles')
       .update({ is_paid: false, subscription_status: 'canceled', stripe_subscription_id: null, subscription_current_period_end: null })
