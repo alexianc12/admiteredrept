@@ -24,11 +24,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Verificăm dacă request-ul este de tip POST
-  if (req.method !== 'POST') { 
-    return new Response('Metoda nepermisă', { status: 405 }); 
-  }
-
   const authHeader = req.headers.get('Authorization')!;
   if (!authHeader) {
     return new Response('Autentificare necesară', { status: 401 });
