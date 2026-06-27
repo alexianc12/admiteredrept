@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/functions/(.*)",
+      "destination": "/functions/$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
