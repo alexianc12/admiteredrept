@@ -1028,8 +1028,12 @@ function openPaymentModal() {
         alert("Te rugăm să te autentifici pentru a cumpăra Premium");
         return;
     }
-    // Injectăm client_reference_id direct în link-ul de plată Stripe
-    const stripeUrl = `https://buy.stripe.com/5kQ8wIc2q9Ojei0288?client_reference_id=${currentUser.id}`;
+    // ========================================================================
+    // TODO: Înlocuiește link-ul de mai jos cu noul tău link de plată din Stripe Test Mode.
+    // Asigură-te că link-ul începe cu "https://buy.stripe.com/test/..."
+    // ========================================================================
+    const paymentLink = "https://buy.stripe.com/test/ÎNLOCUIEȘTE_CU_LINKUL_TĂU_NOU"; 
+    const stripeUrl = `${paymentLink}?client_reference_id=${currentUser.id}`;
     window.location.href = stripeUrl;
 }
 
