@@ -1003,12 +1003,36 @@ function handleInitialRouting() {
     }
 
     async function handleSubscribe() {
-        // Am refactorizat pentru a folosi aceeași logică ca paywall-ul,
-        // care este mai simplă și funcționează corect.
-        openPaymentModal();
+        if (!currentUser) {
+            alert("Te rugăm să te autentifici pentru a te abona.");
+            return;
+        }
+
+        const btn = document.getElementById('btn-subscribe');
+        btn.disabled = true;
+        btn.innerText = "Se procesează...";
+
+        try {
+            if (!currentUser.id) {
+                throw new Error("ID-ul utilizatorului nu a fost găsit. Re-autentificare necesară.");
+            }
+
+            // Construim URL-ul pentru link-ul de plată Stripe, incluzând ID-ul utilizatorului
+            // pentru a-l putea identifica în webhook.
+            const stripeUrl = `https://buy.stripe.com/5kQ8wIc2q9Ojei0288?client_reference_id=${currentUser.id}`;
+
+            // Redirecționăm utilizatorul la pagina de plată.
+            window.location.href = stripeUrl;
+        } catch (error) {
+            // În caz de eroare (ex: currentUser.id lipsește), afișăm un mesaj și reactivăm butonul.
+            alert(`A apărut o eroare la inițierea plății: ${error.message}`);
+            btn.disabled = false;
+            btn.innerText = "Devino Premium";
+        }
     }
 
     async function handleLogout() { try { posthog.reset(); } catch(e){} await supabaseClient.auth.signOut(); window.location.reload(); }
+
 
     function toggleAccordion(capId) {
         const wrap = document.getElementById(capId + '_wrap'); const arrow = document.getElementById(capId + '_arrow');
